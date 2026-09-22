@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A curated toolbox for Roblox creators, builders, scripters, and players.">
+  <title>Roblox Toolkit — Creator resources</title>
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="script.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="#top" aria-label="Roblox Toolkit home"><span class="brand-mark">R</span><span>Roblox<span class="brand-accent">Toolkit</span></span></a>
+    <nav><a href="#tools">Tools</a><a href="#resources">Resources</a><a href="#about">About</a></nav>
+    <a class="github-link" href="https://github.com/afkMomo/Roblox-main" target="_blank" rel="noreferrer">View on GitHub <span>↗</span></a>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow"><span class="pulse"></span> The creator's quick-start hub</p>
+        <h1>Build better.<br><em>Play smarter.</em></h1>
+        <p class="hero-text">A hand-picked collection of Roblox tools, references, and utilities for making your next experience.</p>
+        <a class="primary-button" href="#tools">Explore the toolkit <span>↓</span></a>
+      </div>
+      <div class="hero-art" aria-hidden="true"><div class="orb"></div><div class="cube cube-one">R</div><div class="cube cube-two">✦</div><div class="spark spark-one">+</div><div class="spark spark-two">×</div></div>
+    </section>
+
+    <section id="tools" class="tool-section">
+      <div class="section-heading"><div><p class="eyebrow">Everything in one place</p><h2>Useful tools</h2></div><p id="tool-count" class="tool-count"></p></div>
+      <div class="controls"><label class="search"><span>⌕</span><input id="search" type="search" placeholder="Search tools..." autocomplete="off"></label><div id="filters" class="filters" role="group" aria-label="Filter tools"><button class="filter active" data-filter="All">All</button><button class="filter" data-filter="Create">Create</button><button class="filter" data-filter="Code">Code</button><button class="filter" data-filter="Assets">Assets</button><button class="filter" data-filter="Learn">Learn</button></div><button id="favorites-toggle" class="favorites-toggle">♡ Favorites</button></div>
+      <div id="tool-grid" class="tool-grid"></div><p id="empty" class="empty" hidden>No tools found. Try another search or category.</p>
+    </section>
+
+    <section id="resources" class="resources"><div><p class="eyebrow">Bookmark these</p><h2>Official resources</h2><p class="muted">The trusted places to learn, publish, and keep up with the platform.</p></div><div class="resource-list"><a href="https://create.roblox.com/docs" target="_blank" rel="noreferrer"><span class="resource-icon blue">▣</span><span><strong>Creator Documentation</strong><small>Learn Studio, APIs, Luau, and more</small></span><span>↗</span></a><a href="https://devforum.roblox.com/" target="_blank" rel="noreferrer"><span class="resource-icon purple">◈</span><span><strong>Developer Forum</strong><small>Community news and discussions</small></span><span>↗</span></a><a href="https://create.roblox.com/marketplace" target="_blank" rel="noreferrer"><span class="resource-icon orange">◇</span><span><strong>Creator Marketplace</strong><small>Models, plugins, audio, and images</small></span><span>↗</span></a></div></section>
+
+    <section id="about" class="about"><div class="about-icon">✦</div><div><p class="eyebrow">Made for the community</p><h2>One tab. Less searching.</h2><p class="muted">Save this page and keep your favorite Roblox utilities close. Have a tool suggestion? Add it to <a href="https://github.com/afkMomo/Roblox-main/issues" target="_blank" rel="noreferrer">the repository</a>.</p></div></section>
+  </main>
+  <footer><span>© 2026 Roblox Toolkit</span><span>Independent community project · Not affiliated with Roblox Corporation</span></footer>
+</body>
+</html>
