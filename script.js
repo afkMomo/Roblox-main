@@ -7,7 +7,8 @@ const tools = [
   {name:'Developer Hub',description:'Official guides and tutorials for every part of Roblox development.',category:'Learn',icon:'✦',color:'purple',url:'https://create.roblox.com/docs'},
   {name:'DevForum',description:'Connect with other creators, get help, and follow platform updates.',category:'Learn',icon:'◉',color:'green',url:'https://devforum.roblox.com/'},
   {name:'Asset Delivery API',description:'Explore asset metadata and delivery endpoints in the official docs.',category:'Code',icon:'↯',color:'orange',url:'https://create.roblox.com/docs/reference/cloud/assets'},
-  {name:'Animation Editor',description:'Create and edit custom animations directly inside Roblox Studio.',category:'Create',icon:'⌁',color:'blue',url:'https://create.roblox.com/docs/art/animation/editor'}
+  {name:'Animation Editor',description:'Create and edit custom animations directly inside Roblox Studio.',category:'Create',icon:'⌁',color:'blue',url:'https://create.roblox.com/docs/art/animation/editor'},
+  {name:'Avatar Rotator',description:'Rotate your Roblox avatar between saved outfits automatically, right from your browser.',category:'Create',icon:'⟳',color:'green',url:'/avatar'}
 ];
 const grid=document.querySelector('#tool-grid'), search=document.querySelector('#search'), count=document.querySelector('#tool-count'), empty=document.querySelector('#empty');
 let category='All', favoritesOnly=false, favorites=JSON.parse(localStorage.getItem('roblox-toolkit-favorites')||'[]');

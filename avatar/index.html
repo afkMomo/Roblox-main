@@ -3,7 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Roblox Toolkit — Avatar</title>
+    <title>Roblox Toolkit — Avatar Rotator</title>
+    <meta name="description" content="Rotate your Roblox avatar between saved outfits, right from your browser." />
     <style>
       :root {
         --bg: #0b1020;
@@ -16,8 +17,11 @@
       body {
         margin: 0;
         min-height: 100vh;
-        display: grid;
-        place-items: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+        padding: 48px 16px;
         background: radial-gradient(circle at top, #15213f 0%, var(--bg) 45%);
         color: var(--text);
         font-family: Arial, Helvetica, sans-serif;
@@ -40,25 +44,95 @@
       }
       h1 {
         margin: 0 0 12px;
-        font-size: clamp(2rem, 5vw, 3.5rem);
+        font-size: clamp(2rem, 5vw, 3rem);
       }
-      p {
-        margin: 0;
+      h2 {
+        margin: 0 0 12px;
+        font-size: 1.3rem;
+        color: var(--accent);
+      }
+      p, ol {
+        margin: 0 0 10px;
         line-height: 1.7;
         color: var(--muted);
       }
-      a {
-        color: var(--accent);
+      ol { padding-left: 1.2em; }
+      code {
+        background: rgba(255,255,255,0.08);
+        padding: 0.1em 0.4em;
+        border-radius: 4px;
+        font-size: 0.9em;
+        color: var(--text);
+      }
+      a { color: var(--accent); text-decoration: none; }
+      a:hover { text-decoration: underline; }
+      .bookmarklet-btn {
+        display: inline-block;
+        margin: 10px 0;
+        padding: 14px 26px;
+        background: var(--accent);
+        color: #06222b;
+        font-weight: 800;
+        border-radius: 10px;
         text-decoration: none;
+        cursor: grab;
+      }
+      .bookmarklet-btn:hover { text-decoration: none; filter: brightness(1.08); }
+      .hint { font-size: 0.85em; color: var(--muted); }
+      .warn { color: #ffcf87; }
+      kbd {
+        background: rgba(255,255,255,0.1);
+        border-radius: 4px;
+        padding: 1px 6px;
+        font-size: 0.85em;
       }
     </style>
   </head>
   <body>
     <main class="card">
       <p class="eyebrow">Avatar</p>
-      <h1>Roblox avatar utilities</h1>
-      <p>This page is live at <strong>/avatar</strong> and is ready for your avatar tools, avatar preview sections, and profile widgets.</p>
-      <p style="margin-top: 18px;"><a href="/">← Back to home</a></p>
+      <h1>Avatar Rotator</h1>
+      <p>Automatically rotate your Roblox avatar between saved outfits, so it looks different every time
+        someone reloads your profile &mdash; runs entirely in your own browser.</p>
     </main>
+
+    <section class="card">
+      <h2>How it works</h2>
+      <p>This tool never asks for your password or session cookie, and nothing you do here is sent to this
+        site's server. Instead, you install a <strong>bookmarklet</strong> &mdash; a saved browser button.
+        When you click it while on <code>roblox.com</code> (already logged in, as normal), it runs directly
+        on that page and uses your existing Roblox session to talk to Roblox's own API. Your session never
+        leaves your browser, and it stops the moment you close that tab.</p>
+    </section>
+
+    <section class="card" style="text-align:center;">
+      <h2>1. Install</h2>
+      <p>Drag this button to your bookmarks bar:</p>
+      <a id="bookmarklet" class="bookmarklet-btn" href="#" onclick="return false;">🎭 Avatar Rotator</a>
+      <p class="hint">If your bookmarks bar is hidden, press <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd> to show it.</p>
+    </section>
+
+    <section class="card">
+      <h2>2. Use it</h2>
+      <ol>
+        <li>Go to <a href="https://www.roblox.com" target="_blank" rel="noopener">roblox.com</a> and make sure you're logged in.</li>
+        <li>Click the <strong>Avatar Rotator</strong> bookmark you just installed.</li>
+        <li>A small panel appears on the page. Click <strong>Fetch My Outfits</strong>.</li>
+        <li>Select the outfits you want to rotate through and set an interval.</li>
+        <li>Click <strong>Start</strong>. Close the tab any time to stop.</li>
+      </ol>
+    </section>
+
+    <section class="card">
+      <h2>Security</h2>
+      <p class="warn">⚠ This runs with the same access as your normal roblox.com session. Only install the
+        bookmarklet from a source you trust, the same way you'd be careful about any browser extension or
+        userscript. The full source of <a href="/avatar/inject.js" target="_blank" rel="noopener">inject.js</a>
+        is public &mdash; you're welcome to read exactly what it does before using it.</p>
+    </section>
+
+    <p style="margin-top: 8px;"><a href="/">← Back to home</a></p>
+
+    <script src="/avatar/script.js"></script>
   </body>
 </html>
