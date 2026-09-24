@@ -1,138 +1,1215 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Roblox Toolkit — Avatar Rotator</title>
-    <meta name="description" content="Rotate your Roblox avatar between saved outfits, right from your browser." />
-    <style>
-      :root {
-        --bg: #0b1020;
-        --panel: #121a2b;
-        --accent: #6ee7ff;
-        --text: #edf6ff;
-        --muted: #a8b5c7;
-      }
-      * { box-sizing: border-box; }
-      body {
-        margin: 0;
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 20px;
-        padding: 48px 16px;
-        background: radial-gradient(circle at top, #15213f 0%, var(--bg) 45%);
-        color: var(--text);
-        font-family: Arial, Helvetica, sans-serif;
-      }
-      .card {
-        width: min(92vw, 760px);
-        background: rgba(18, 26, 43, 0.9);
-        border: 1px solid rgba(110, 231, 255, 0.2);
-        border-radius: 18px;
-        padding: 32px 28px;
-        box-shadow: 0 20px 50px rgba(0,0,0,0.35);
-      }
-      .eyebrow {
-        margin: 0 0 16px 0;
-        color: var(--accent);
-        text-transform: uppercase;
-        letter-spacing: 0.12em;
-        font-size: 12px;
-        font-weight: 700;
-      }
-      h1 {
-        margin: 0 0 12px;
-        font-size: clamp(2rem, 5vw, 3rem);
-      }
-      h2 {
-        margin: 0 0 12px;
-        font-size: 1.3rem;
-        color: var(--accent);
-      }
-      p, ol {
-        margin: 0 0 10px;
-        line-height: 1.7;
-        color: var(--muted);
-      }
-      ol { padding-left: 1.2em; }
-      code {
-        background: rgba(255,255,255,0.08);
-        padding: 0.1em 0.4em;
-        border-radius: 4px;
-        font-size: 0.9em;
-        color: var(--text);
-      }
-      a { color: var(--accent); text-decoration: none; }
-      a:hover { text-decoration: underline; }
-      .bookmarklet-btn {
-        display: inline-block;
-        margin: 10px 0;
-        padding: 14px 26px;
-        background: var(--accent);
-        color: #06222b;
-        font-weight: 800;
-        border-radius: 10px;
-        text-decoration: none;
-        cursor: grab;
-      }
-      .bookmarklet-btn:hover { text-decoration: none; filter: brightness(1.08); }
-      .hint { font-size: 0.85em; color: var(--muted); }
-      .warn { color: #ffcf87; }
-      kbd {
-        background: rgba(255,255,255,0.1);
-        border-radius: 4px;
-        padding: 1px 6px;
-        font-size: 0.85em;
-      }
-    </style>
-  </head>
-  <body>
-    <main class="card">
-      <p class="eyebrow">Avatar</p>
-      <h1>Avatar Rotator</h1>
-      <p>Automatically rotate your Roblox avatar between saved outfits, so it looks different every time
-        someone reloads your profile &mdash; runs entirely in your own browser.</p>
-    </main>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Avatar Rotator for Roblox – Bookmarklet</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "Segoe UI", system-ui, -apple-system, sans-serif; background: #0b0d12; color: #e9ecf3; line-height: 1.6; }
+  .bg { position: fixed; inset: 0; z-index: -1; background:
+      radial-gradient(60% 50% at 15% 0%, rgba(34,211,238,.18), transparent 70%),
+      radial-gradient(60% 50% at 85% 10%, rgba(139,92,246,.22), transparent 70%),
+      radial-gradient(50% 40% at 50% 100%, rgba(59,130,246,.10), transparent 70%); }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 56px 24px 80px; }
+  .badge { display: inline-block; padding: 4px 12px; border-radius: 99px; font-size: 12px; font-weight: 700; letter-spacing: .6px;
+    background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1); color: #a5b4fc; }
+  h1 { font-size: 48px; line-height: 1.1; margin: 16px 0 10px; letter-spacing: -1px; }
+  h1 span { background: linear-gradient(90deg, #67e8f9, #a78bfa); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .lead { font-size: 18px; color: #9aa3b5; max-width: 640px; margin: 0; }
+  .install { margin: 36px 0; padding: 28px; border-radius: 22px; background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+    border: 1px solid rgba(255,255,255,.08); display: flex; gap: 28px; align-items: center; flex-wrap: wrap; }
+  .drag { display: inline-flex; align-items: center; gap: 12px; padding: 18px 30px; border-radius: 16px; font-size: 19px; font-weight: 800;
+    color: #fff; text-decoration: none; cursor: grab; background: linear-gradient(135deg, #06b6d4, #7c3aed);
+    box-shadow: 0 12px 40px rgba(124,58,237,.45), inset 0 1px 0 rgba(255,255,255,.25); animation: glow 2.4s ease-in-out infinite; }
+  .drag:active { cursor: grabbing; }
+  @keyframes glow { 50% { box-shadow: 0 12px 56px rgba(34,211,238,.55), inset 0 1px 0 rgba(255,255,255,.25); } }
+  .steps { flex: 1; min-width: 280px; margin: 0; padding-left: 20px; color: #c8cfdc; }
+  .steps li { margin: 4px 0; }
+  kbd, code { font-family: ui-monospace, Consolas, monospace; font-size: 12.5px; padding: 2px 7px; border-radius: 6px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.08); }
+  .alt { margin-top: 14px; font-size: 13px; color: #8b93a7; width: 100%; }
+  button.copy { font: inherit; font-size: 13px; font-weight: 600; color: #e9ecf3; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12);
+    padding: 6px 14px; border-radius: 10px; cursor: pointer; margin-left: 6px; }
+  button.copy:hover { background: rgba(255,255,255,.14); }
+  .ok { color: #4ade80; margin-left: 8px; display: none; }
+  h2 { font-size: 22px; margin: 48px 0 16px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+  .f { padding: 18px; border-radius: 16px; background: rgba(255,255,255,.035); border: 1px solid rgba(255,255,255,.07); }
+  .f b { display: block; margin: 8px 0 4px; font-size: 15px; }
+  .f p { margin: 0; font-size: 13.5px; color: #9aa3b5; }
+  .f .i { font-size: 22px; }
+  .note { padding: 18px 20px; border-radius: 16px; font-size: 14px; margin-top: 14px; }
+  .note.info { background: rgba(59,130,246,.08); border: 1px solid rgba(59,130,246,.3); }
+  .note.warn { background: rgba(245,158,11,.07); border: 1px solid rgba(245,158,11,.35); }
+  .note ul { margin: 6px 0 0; padding-left: 20px; }
+  footer { margin-top: 56px; font-size: 13px; color: #6b7385; text-align: center; }
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="wrap">
+  <span class="badge">BOOKMARKLET · NO INSTALL · NO COOKIE NEEDED</span>
+  <h1>Avatar <span>Rotator</span> for Roblox</h1>
+  <p class="lead">Automatically cycle your Roblox avatar through your saved outfits on a timer — so it's different every time someone looks. Runs right inside your logged-in Roblox tab.</p>
 
-    <section class="card">
-      <h2>How it works</h2>
-      <p>This tool never asks for your password or session cookie, and nothing you do here is sent to this
-        site's server. Instead, you install a <strong>bookmarklet</strong> &mdash; a saved browser button.
-        When you click it while on <code>roblox.com</code> (already logged in, as normal), it runs directly
-        on that page and uses your existing Roblox session to talk to Roblox's own API. Your session never
-        leaves your browser, and it stops the moment you close that tab.</p>
-    </section>
+  <div class="install">
+    <a class="drag" id="bm" href="#" onclick="alert('Drag this button onto your bookmarks bar — don\'t click it here.'); return false;">👕 Avatar Rotator</a>
+    <ol class="steps">
+      <li>Show your bookmarks bar with <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd></li>
+      <li><b>Drag</b> the glowing button onto the bar</li>
+      <li>Open <code>www.roblox.com</code> while logged in</li>
+      <li>Click the bookmark → pick outfits → set a timer → <b>Start</b></li>
+    </ol>
+    <div class="alt">Can't drag? <button class="copy" id="copy">Copy bookmarklet code</button><span class="ok" id="copied">✓ Copied — create a new bookmark and paste it as the URL</span></div>
+  </div>
 
-    <section class="card" style="text-align:center;">
-      <h2>1. Install</h2>
-      <p>Drag this button to your bookmarks bar:</p>
-      <a id="bookmarklet" class="bookmarklet-btn" href="#" onclick="return false;">🎭 Avatar Rotator</a>
-      <p class="hint">If your bookmarks bar is hidden, press <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd> to show it.</p>
-    </section>
+  <h2>Features</h2>
+  <div class="grid">
+    <div class="f"><span class="i">⏱</span><b>Auto-switch timer</b><p>Seconds, minutes or hours, with one-tap presets. A live countdown ring shows when the next switch happens.</p></div>
+    <div class="f"><span class="i">🧥</span><b>Visual outfit picker</b><p>All your saved outfits with thumbnails, search, select all/clear. Numbered badges show the rotation order.</p></div>
+    <div class="f"><span class="i">🔀</span><b>Sequential, Shuffle, Random</b><p>Go in order, shuffle each cycle, or pick randomly. It never repeats the same outfit twice in a row.</p></div>
+    <div class="f"><span class="i">⏭</span><b>Start, Stop, Skip, Wear now</b><p>Control everything live. Click any outfit or queue item to wear it instantly.</p></div>
+    <div class="f"><span class="i">💊</span><b>Minimize to a floating pill</b><p>Shrink it into a draggable mini player with the countdown. The window remembers where you put it.</p></div>
+    <div class="f"><span class="i">💾</span><b>Remembers everything</b><p>Your outfits, timer and options are saved. Auto-resume continues rotating when you reopen it.</p></div>
+    <div class="f"><span class="i">📜</span><b>Detailed logs</b><p>Every request is logged with filters, copy and save-to-file for troubleshooting.</p></div>
+    <div class="f"><span class="i">🔔</span><b>Notifications and tab countdown</b><p>Optional desktop notifications, countdown in the tab title, and a warning before you close the tab while it's running.</p></div>
+    <div class="f"><span class="i">🛡</span><b>Rate-limit safe</b><p>Backs off automatically when Roblox rate-limits and stops after repeated failures. Outfit data is cached so fewer requests are sent.</p></div>
+  </div>
 
-    <section class="card">
-      <h2>2. Use it</h2>
-      <ol>
-        <li>Go to <a href="https://www.roblox.com" target="_blank" rel="noopener">roblox.com</a> and make sure you're logged in.</li>
-        <li>Click the <strong>Avatar Rotator</strong> bookmark you just installed.</li>
-        <li>A small panel appears on the page. Click <strong>Fetch My Outfits</strong>.</li>
-        <li>Select the outfits you want to rotate through and set an interval.</li>
-        <li>Click <strong>Start</strong>. Close the tab any time to stop.</li>
-      </ol>
-    </section>
+  <h2>Good to know</h2>
+  <div class="note info">
+    <ul>
+      <li><b>Keep a Roblox tab open.</b> The rotator runs inside that tab. If you close it or leave roblox.com, it stops. Click the bookmark again to resume.</li>
+      <li>Background tabs can be throttled by the browser, so switches may run a little late when the tab isn't visible. A separate browser window works best.</li>
+      <li>This changes your <b>account</b> avatar. Other players see the new outfit when you respawn or rejoin a game.</li>
+      <li>Click the bookmark again to hide or show the panel. The rotation keeps running while it's hidden.</li>
+    </ul>
+  </div>
+  <div class="note warn">
+    <b>⚠ Safety:</b> This only talks to <code>*.roblox.com</code> with your existing login, and the full source code is in this HTML file. Never install a Roblox bookmarklet from someone else without reading it first. It runs with full access to your account.
+  </div>
 
-    <section class="card">
-      <h2>Security</h2>
-      <p class="warn">⚠ This runs with the same access as your normal roblox.com session. Only install the
-        bookmarklet from a source you trust, the same way you'd be careful about any browser extension or
-        userscript. The full source of <a href="/avatar/inject.js" target="_blank" rel="noopener">inject.js</a>
-        is public &mdash; you're welcome to read exactly what it does before using it.</p>
-    </section>
+  <footer><a href="/" style="color:#67e8f9;text-decoration:none">← Back to home</a><br><br>Inspired by <b>fowntain</b>'s Roblox Avatar Rotator (AGPL-3.0) · rebuilt as a browser bookmarklet</footer>
+</div>
 
-    <p style="margin-top: 8px;"><a href="/">← Back to home</a></p>
+<script>
+// ============================================================================
+//  The bookmarklet. Everything inside this function is serialized into the
+//  bookmark URL, so it must be completely self-contained.
+// ============================================================================
+function robloxAvatarRotator() {
+  'use strict';
+  if (!/(^|\.)roblox\.com$/.test(location.hostname)) {
+    alert('Avatar Rotator: open www.roblox.com (logged in) first, then click the bookmark.');
+    return;
+  }
+  if (window.__ROS) { window.__ROS.toggle(); return; }
 
-    <script src="/avatar/script.js"></script>
-  </body>
+  // ---------------------------------------------------------------- settings
+  var AV = 'https://avatar.roblox.com';
+  var STORE = 'ros_settings_v1';
+  var UNIT_MS = { s: 1000, m: 60000, h: 3600000 };
+  var DEFAULTS = {
+    selected: [], interval: 30, unit: 's', mode: 'sequential', method: 'auto',
+    switchOnStart: true, autoResume: true, tabTitle: true, notify: false,
+    warnLeave: true, redraw: false, pos: null, minimized: false, wasRunning: false
+  };
+  var S = Object.assign({}, DEFAULTS);
+  try { Object.assign(S, JSON.parse(localStorage.getItem(STORE) || '{}')); } catch (e) {}
+  function save() { try { localStorage.setItem(STORE, JSON.stringify(S)); } catch (e) {} }
+  function intervalMs() { return Math.max(2000, (+S.interval || 0) * (UNIT_MS[S.unit] || 1000)); }
+  function fmtInterval() { return (+S.interval || 0) + S.unit; }
+
+  // ---------------------------------------------------------------- state
+  var R = {
+    running: false, busy: false, nextAt: 0, cycleMs: 0, current: null,
+    order: [], pos: 0, orderMode: null, switches: 0, errors: 0, failStreak: 0,
+    startedAt: 0, cache: {}, method: null, origTitle: document.title
+  };
+  var outfits = [];
+  var thumbs = {};
+  var logs = [];
+  var ui = { cards: {} };
+  var searchTerm = '';
+  var logFilter = 'all';
+  var currentTab = 'now';
+  var CIRC = 339.292;
+
+  // ---------------------------------------------------------------- network
+  var csrfMeta = document.querySelector('meta[name="csrf-token"]');
+  var csrf = csrfMeta ? csrfMeta.getAttribute('data-token') || '' : '';
+
+  async function req(method, url, body) {
+    var last = { ok: false, status: 0, data: null, text: '' };
+    for (var i = 0; i < 2; i++) {
+      var headers = { 'Accept': 'application/json' };
+      if (body !== undefined) headers['Content-Type'] = 'application/json';
+      if (method !== 'GET') headers['X-CSRF-TOKEN'] = csrf;
+      try {
+        var r = await fetch(url, {
+          method: method, credentials: 'include', headers: headers,
+          body: body === undefined ? undefined : JSON.stringify(body)
+        });
+        var tok = r.headers.get('x-csrf-token');
+        var text = await r.text();
+        var data = null;
+        try { data = text ? JSON.parse(text) : null; } catch (e) {}
+        last = { ok: r.ok, status: r.status, data: data, text: text };
+        if (r.status === 403 && tok && tok !== csrf) { csrf = tok; continue; }
+      } catch (e) {
+        last = { ok: false, status: 0, data: null, text: String((e && e.message) || e) };
+      }
+      break;
+    }
+    return last;
+  }
+  function snip(t) { return String(t || '').replace(/\s+/g, ' ').slice(0, 160); }
+  function httpError(what, r) {
+    var e = new Error(what + ' failed (' + (r.status || 'network') + ')' + (r.text ? ': ' + snip(r.text) : ''));
+    e.status = r.status;
+    return e;
+  }
+
+  // ---------------------------------------------------------------- avatar API
+  async function getDetails(kind, id) {
+    var key = kind + ':' + id;
+    if (R.cache[key]) return R.cache[key];
+    var r;
+    if (kind === 'v4') {
+      r = await req('GET', AV + '/v4/outfits/' + id + '/details');
+    } else {
+      r = await req('GET', AV + '/v3/outfits/' + id + '/details');
+      if (!r.ok && r.status !== 429 && r.status !== 401) r = await req('GET', AV + '/v1/outfits/' + id + '/details');
+    }
+    if (!r.ok || !r.data) throw httpError('Outfit details', r);
+    R.cache[key] = r.data;
+    return r.data;
+  }
+
+  async function wearV4(id) {
+    var body = Object.assign({}, await getDetails('v4', id));
+    ['id', 'name', 'isEditable', 'outfitType', 'universeId', 'inventoryType', 'bundleId'].forEach(function (k) { delete body[k]; });
+    var r = await req('PATCH', AV + '/v4/avatar', body);
+    if (!r.ok) throw httpError('Modern avatar update', r);
+  }
+
+  async function wearLegacy(id) {
+    var x = await getDetails('legacy', id);
+    var r;
+    if (x.playerAvatarType != null) {
+      var t = typeof x.playerAvatarType === 'string' ? { R6: 1, R15: 3 }[x.playerAvatarType] : x.playerAvatarType;
+      if (t) {
+        r = await req('POST', AV + '/v1/avatar/set-player-avatar-type', { playerAvatarType: t });
+        if (!r.ok) log('Avatar type not applied (' + r.status + ')', 'warn');
+      }
+    }
+    if (x.scale) {
+      r = await req('POST', AV + '/v1/avatar/set-scales', x.scale);
+      if (!r.ok) log('Scales not applied (' + r.status + ')', 'warn');
+    }
+    r = null;
+    if (x.bodyColor3s) r = await req('POST', AV + '/v2/avatar/set-body-colors', x.bodyColor3s);
+    else if (x.bodyColors) r = await req('POST', AV + '/v1/avatar/set-body-colors', x.bodyColors);
+    if (r && !r.ok) log('Body colors not applied (' + r.status + ')', 'warn');
+    var assets = (x.assets || []).map(function (a) { return a.meta ? { id: a.id, meta: a.meta } : { id: a.id }; });
+    r = await req('POST', AV + '/v2/avatar/set-wearing-assets', { assets: assets });
+    if (!r.ok) throw httpError('Equipping items', r);
+    if (r.data && r.data.invalidAssetIds && r.data.invalidAssetIds.length) {
+      log(r.data.invalidAssetIds.length + ' item(s) could not be worn (no longer owned?)', 'warn');
+    }
+  }
+
+  async function wearOutfit(id) {
+    var order = S.method === 'v4' ? ['v4'] : S.method === 'legacy' ? ['legacy']
+      : (R.method === 'legacy' ? ['legacy', 'v4'] : ['v4', 'legacy']);
+    var lastErr;
+    for (var i = 0; i < order.length; i++) {
+      var m = order[i];
+      try {
+        if (m === 'v4') await wearV4(id); else await wearLegacy(id);
+        if (R.method !== m) { R.method = m; log('Using the ' + (m === 'v4' ? 'modern (v4)' : 'legacy') + ' avatar API'); }
+        return;
+      } catch (e) {
+        lastErr = e;
+        if (e.status === 401 || e.status === 429) break;
+        if (i < order.length - 1) log(e.message + ' — trying ' + (order[i + 1] === 'v4' ? 'modern' : 'legacy') + ' method', 'warn');
+      }
+    }
+    throw lastErr;
+  }
+
+  // ---------------------------------------------------------------- outfits
+  async function loadOutfits() {
+    ui.refreshBtn.classList.add('spin');
+    if (!outfits.length) setGridMessage('Loading your outfits…');
+    try {
+      var uid = null;
+      var ud = document.querySelector('meta[name="user-data"]');
+      if (ud) uid = ud.getAttribute('data-userid');
+      if (!uid) {
+        var me = await req('GET', 'https://users.roblox.com/v1/users/authenticated');
+        if (!me.ok || !me.data) {
+          setGridMessage('You are not logged in to Roblox. Log in and try again.');
+          log('Not logged in (' + me.status + ')', 'error');
+          return;
+        }
+        uid = me.data.id;
+      }
+      var list = [], token = '', guard = 0, fetched = false;
+      do {
+        var r = await req('GET', AV + '/v2/avatar/users/' + uid + '/outfits?itemsPerPage=50&isEditable=true' +
+          (token ? '&paginationToken=' + encodeURIComponent(token) : ''));
+        if (!r.ok || !r.data) { log('Outfit list request failed (' + r.status + ')', 'warn'); break; }
+        fetched = true;
+        list = list.concat(r.data.data || []);
+        token = r.data.paginationToken;
+      } while (token && ++guard < 20);
+      if (!list.length) {
+        var old = await req('GET', AV + '/v1/users/' + uid + '/outfits?page=1&itemsPerPage=100&isEditable=true');
+        if (old.ok && old.data) { fetched = true; list = old.data.data || []; }
+      }
+      if (!fetched) {
+        setGridMessage('Could not load outfits from Roblox. Press refresh to try again.');
+        return;
+      }
+      outfits = list
+        .filter(function (o) { return o.isEditable !== false && (!o.outfitType || o.outfitType === 'Avatar'); })
+        .map(function (o) { return { id: o.id, name: o.name }; });
+
+      var byId = {};
+      outfits.forEach(function (o) { byId[o.id] = o; });
+      var before = S.selected.length;
+      S.selected = S.selected.filter(function (s) {
+        if (!byId[s.id]) return false;
+        s.name = byId[s.id].name;
+        return true;
+      });
+      if (S.selected.length < before) log((before - S.selected.length) + ' saved outfit(s) no longer exist and were removed', 'warn');
+      save();
+      log('Loaded ' + outfits.length + ' outfit(s)');
+      renderOutfits();
+      renderAll();
+      loadThumbs(outfits.map(function (o) { return o.id; }), 0);
+    } finally {
+      ui.refreshBtn.classList.remove('spin');
+    }
+  }
+
+  async function loadThumbs(ids, attempt) {
+    var pending = [];
+    for (var i = 0; i < ids.length; i += 50) {
+      var chunk = ids.slice(i, i + 50);
+      var r = await req('GET', 'https://thumbnails.roblox.com/v1/users/outfits?userOutfitIds=' + chunk.join(',') +
+        '&size=420x420&format=Png&isCircular=false');
+      if (!r.ok || !r.data) { pending = pending.concat(chunk); continue; }
+      (r.data.data || []).forEach(function (t) {
+        if (!t || !t.targetId) return;
+        if (t.state === 'Completed' && t.imageUrl) { thumbs[t.targetId] = t.imageUrl; applyThumb(t.targetId); }
+        else pending.push(t.targetId);
+      });
+    }
+    if (pending.length && attempt < 3) setTimeout(function () { loadThumbs(pending, attempt + 1); }, 3000);
+  }
+  function applyThumb(id) {
+    ui.shadow.querySelectorAll('img[data-oid="' + id + '"]').forEach(function (img) {
+      img.src = thumbs[id];
+      img.classList.add('loaded');
+    });
+  }
+
+  // ---------------------------------------------------------------- rotation order
+  function selIds() { return S.selected.map(function (s) { return s.id; }); }
+  function nameOf(id) {
+    for (var i = 0; i < S.selected.length; i++) if (S.selected[i].id === id) return S.selected[i].name;
+    for (var j = 0; j < outfits.length; j++) if (outfits[j].id === id) return outfits[j].name;
+    return 'Outfit ' + id;
+  }
+  function shuffle(a) {
+    for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; }
+    return a;
+  }
+  function orderValid() {
+    var ids = selIds();
+    return R.orderMode === S.mode && R.order.length === ids.length &&
+      R.order.every(function (id) { return ids.indexOf(id) >= 0; });
+  }
+  function buildOrder() {
+    var ids = selIds();
+    if (S.mode === 'shuffle') {
+      ids = shuffle(ids.slice());
+      if (ids.length > 1 && R.current && ids[0] === R.current.id) ids.push(ids.shift());
+      R.order = ids;
+      R.pos = 0;
+    } else {
+      R.order = ids;
+      var ci = R.current ? ids.indexOf(R.current.id) : -1;
+      R.pos = ci >= 0 ? (ci + 1) % ids.length : 0;
+    }
+    R.orderMode = S.mode;
+  }
+  function pickNext() {
+    var ids = selIds();
+    if (!ids.length) return null;
+    if (S.mode === 'random') {
+      if (ids.length === 1) return ids[0];
+      var c;
+      do { c = ids[Math.floor(Math.random() * ids.length)]; } while (R.current && c === R.current.id);
+      return c;
+    }
+    if (!orderValid()) buildOrder();
+    else if (R.pos >= R.order.length) { if (S.mode === 'shuffle') buildOrder(); else R.pos = 0; }
+    return R.order[R.pos++];
+  }
+  function peekNext() {
+    var ids = selIds();
+    if (!ids.length) return null;
+    if (S.mode === 'random') return ids.length === 1 ? ids[0] : 'random';
+    if (!orderValid()) {
+      if (S.mode === 'shuffle') return 'shuffle';
+      var ci = R.current ? ids.indexOf(R.current.id) : -1;
+      return ids[(ci + 1) % ids.length];
+    }
+    if (R.pos >= R.order.length) return S.mode === 'shuffle' ? 'shuffle' : R.order[0];
+    return R.order[R.pos];
+  }
+
+  // ---------------------------------------------------------------- engine
+  function schedule(from) {
+    if (!R.running) return;
+    R.cycleMs = intervalMs();
+    R.nextAt = Math.max(from + R.cycleMs, Date.now() + 1000);
+  }
+
+  async function doSwitch(forceId, manual) {
+    if (R.busy) { if (manual) toast('Already switching…', 'warn'); return; }
+    var id = forceId || pickNext();
+    if (!id) {
+      log('No outfits selected', 'warn');
+      if (R.running) stop();
+      if (manual) { toast('Pick some outfits first', 'warn'); setTab('outfits'); }
+      return;
+    }
+    var name = nameOf(id);
+    R.busy = true;
+    renderAll();
+    var t0 = Date.now();
+    try {
+      log('Equipping "' + name + '"…');
+      await wearOutfit(id);
+      R.current = { id: id, name: name };
+      R.switches++;
+      R.failStreak = 0;
+      log('✓ Now wearing "' + name + '" (' + (Date.now() - t0) + ' ms)', 'success');
+      notify(id);
+      if (manual) toast('Now wearing ' + name, 'success');
+      if (S.redraw) req('POST', AV + '/v1/avatar/redraw-thumbnail', {});
+      schedule(t0);
+    } catch (e) {
+      R.errors++;
+      R.failStreak++;
+      log('✗ Could not equip "' + name + '": ' + ((e && e.message) || e), 'error');
+      if (manual) toast('Could not equip ' + name, 'error');
+      if (e && e.status === 401) {
+        toast('You are logged out of Roblox', 'error');
+        if (R.running) stop();
+      } else if (e && e.status === 429) {
+        log('Rate limited by Roblox — backing off', 'warn');
+        if (R.running) { R.cycleMs = Math.max(30000, intervalMs()); R.nextAt = Date.now() + R.cycleMs; }
+      } else if (R.running && R.failStreak >= 5) {
+        log('5 failures in a row — rotation stopped. Check the log above.', 'error');
+        toast('Stopped after repeated errors', 'error');
+        stop();
+      } else {
+        schedule(Date.now());
+      }
+    } finally {
+      R.busy = false;
+      renderAll();
+    }
+  }
+
+  function start() {
+    if (!S.selected.length) { toast('Pick at least one outfit first', 'warn'); setTab('outfits'); return; }
+    if (R.running) return;
+    R.running = true;
+    R.cache = {};
+    R.startedAt = Date.now();
+    R.failStreak = 0;
+    R.orderMode = null;
+    if (!/^[⏱⟳]/.test(document.title)) R.origTitle = document.title;
+    S.wasRunning = true;
+    save();
+    log('▶ Rotation started · ' + S.selected.length + ' outfit(s) · every ' + fmtInterval() + ' · ' + S.mode);
+    toast('Rotation started', 'success');
+    R.cycleMs = intervalMs();
+    R.nextAt = S.switchOnStart ? 0 : Date.now() + R.cycleMs;
+    renderAll();
+  }
+
+  function stop() {
+    if (!R.running) return;
+    R.running = false;
+    S.wasRunning = false;
+    save();
+    restoreTitle();
+    log('■ Rotation stopped');
+    toast('Rotation stopped');
+    renderAll();
+  }
+  function restoreTitle() { if (/^[⏱⟳]/.test(document.title)) document.title = R.origTitle; }
+
+  var lastTick = 0;
+  function tick() {
+    lastTick = Date.now();
+    if (R.running && !R.busy && lastTick >= R.nextAt) doSwitch();
+    updateClock();
+  }
+
+  function notify(id) {
+    try {
+      if (S.notify && 'Notification' in window && Notification.permission === 'granted') {
+        new Notification('Avatar switched', { body: 'Now wearing ' + nameOf(id), icon: thumbs[id] || undefined, silent: true, tag: 'ros' });
+      }
+    } catch (e) {}
+  }
+
+  // ---------------------------------------------------------------- logging
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+  function fmt(ms) {
+    var s = Math.max(0, Math.ceil(ms / 1000)), h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), ss = s % 60;
+    return (h ? h + ':' + pad(m) : m) + ':' + pad(ss);
+  }
+  function passes(e) { return logFilter === 'all' || e.level === logFilter || (logFilter === 'info' && e.level === 'success'); }
+  function logRow(e) {
+    var d = document.createElement('div');
+    d.className = 'lg ' + e.level;
+    var t = document.createElement('time');
+    t.textContent = pad(e.t.getHours()) + ':' + pad(e.t.getMinutes()) + ':' + pad(e.t.getSeconds());
+    var m = document.createElement('span');
+    m.textContent = e.msg;
+    d.appendChild(t);
+    d.appendChild(m);
+    return d;
+  }
+  function log(msg, level) {
+    var e = { t: new Date(), msg: String(msg), level: level || 'info' };
+    logs.push(e);
+    if (logs.length > 1000) logs.shift();
+    if (ui.logList && passes(e)) {
+      ui.logList.appendChild(logRow(e));
+      while (ui.logList.childNodes.length > 1000) ui.logList.removeChild(ui.logList.firstChild);
+      ui.logList.scrollTop = ui.logList.scrollHeight;
+    }
+  }
+  function renderLogs() {
+    ui.logList.textContent = '';
+    logs.filter(passes).forEach(function (e) { ui.logList.appendChild(logRow(e)); });
+    ui.logList.scrollTop = ui.logList.scrollHeight;
+  }
+  function logText() {
+    return logs.map(function (e) { return '[' + e.t.toISOString() + '] ' + e.level.toUpperCase() + ' ' + e.msg; }).join('\n');
+  }
+
+  // ---------------------------------------------------------------- UI
+  function svg(p) { return '<svg viewBox="0 0 24 24" fill="currentColor"><path d="' + p + '"/></svg>'; }
+  var I = {
+    play: svg('M8 5.14v13.72a1 1 0 001.53.85l10.6-6.86a1 1 0 000-1.7L9.53 4.29A1 1 0 008 5.14z'),
+    stop: svg('M7 6h10a1 1 0 011 1v10a1 1 0 01-1 1H7a1 1 0 01-1-1V7a1 1 0 011-1z'),
+    skip: svg('M5.5 6.2v11.6a.8.8 0 001.23.67l8.6-5.8a.8.8 0 000-1.34l-8.6-5.8A.8.8 0 005.5 6.2zM17 6h2v12h-2z'),
+    min: svg('M5 11h14v2H5z'),
+    close: svg('M18.3 5.71L12 12.01 5.7 5.7 4.29 7.11 10.59 13.4 4.3 19.7l1.41 1.41 6.3-6.3 6.29 6.3 1.41-1.41-6.29-6.3 6.29-6.29z'),
+    expand: svg('M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z'),
+    refresh: svg('M17.65 6.35A7.96 7.96 0 0012 4a8 8 0 108 8h-2a6 6 0 11-1.76-4.24L13 11h7V4l-2.35 2.35z'),
+    search: svg('M15.5 14h-.79l-.28-.27A6.47 6.47 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z')
+  };
+
+  var CSS = [
+    ':host{all:initial}',
+    '*{box-sizing:border-box;margin:0;padding:0}',
+    '.panel,.pill,.toasts{font-family:"Builder Sans","Gotham SSm","Segoe UI",system-ui,-apple-system,sans-serif;color:#e9ecf3;font-size:13px;line-height:1.4;-webkit-font-smoothing:antialiased}',
+    'button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}',
+    'input{font:inherit;color:inherit}',
+    '.hide{display:none!important}',
+    '::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:8px}::-webkit-scrollbar-track{background:transparent}',
+    '.panel{position:fixed;top:16px;right:16px;width:400px;height:min(660px,calc(100vh - 32px));display:flex;flex-direction:column;background:linear-gradient(180deg,rgba(24,28,38,.97),rgba(13,15,21,.98));border:1px solid rgba(255,255,255,.08);border-radius:20px;box-shadow:0 30px 80px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.05);overflow:hidden;backdrop-filter:blur(20px);animation:pop .22s ease-out}',
+    '.panel:before{content:"";position:absolute;inset:0 0 auto 0;height:170px;background:radial-gradient(120% 100% at 0% 0%,rgba(34,211,238,.16),transparent 60%),radial-gradient(120% 100% at 100% 0%,rgba(139,92,246,.2),transparent 60%);pointer-events:none}',
+    '@keyframes pop{from{opacity:0;transform:translateY(-8px) scale(.98)}to{opacity:1;transform:none}}',
+    'header{position:relative;display:flex;align-items:center;gap:10px;padding:14px 10px 10px 14px;cursor:grab;user-select:none}',
+    'header:active{cursor:grabbing}',
+    '.logo{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;font-size:19px;background:linear-gradient(135deg,#22d3ee,#8b5cf6);box-shadow:0 6px 18px rgba(139,92,246,.45)}',
+    '.ttl{flex:1;display:flex;flex-direction:column}',
+    '.ttl b{font-size:15px;font-weight:700;letter-spacing:.2px}',
+    '.status{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:#8b93a7}',
+    '.dot{width:7px;height:7px;border-radius:50%;flex:none;background:#ef4444;box-shadow:0 0 0 3px rgba(239,68,68,.15)}',
+    '.dot.on{background:#22c55e;box-shadow:0 0 0 3px rgba(34,197,94,.2);animation:pulse 1.6s infinite}',
+    '.dot.busy{background:#f59e0b;box-shadow:0 0 0 3px rgba(245,158,11,.2)}',
+    '@keyframes pulse{50%{box-shadow:0 0 0 6px rgba(34,197,94,0)}}',
+    '.ib{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;color:#aab2c3;transition:.15s;flex:none}',
+    '.ib:hover{background:rgba(255,255,255,.08);color:#fff}',
+    '.ib svg{width:17px;height:17px}',
+    'nav{position:relative;display:flex;gap:2px;padding:0 10px;border-bottom:1px solid rgba(255,255,255,.06)}',
+    'nav button{position:relative;padding:10px 10px 11px;color:#8b93a7;font-weight:600;font-size:12.5px;transition:color .15s}',
+    'nav button:hover{color:#d6dbe6}',
+    'nav button.on{color:#fff}',
+    'nav em{font-style:normal;font-size:10.5px;padding:1px 6px;margin-left:4px;border-radius:99px;background:rgba(255,255,255,.08);color:#cfd5e2}',
+    'nav em.err{background:rgba(239,68,68,.2);color:#fca5a5}',
+    '#tabInk{position:absolute;bottom:-1px;height:2px;border-radius:2px;background:linear-gradient(90deg,#22d3ee,#8b5cf6);transition:left .25s,width .25s}',
+    'main{flex:1;overflow:hidden;position:relative}',
+    '.view{display:none;height:100%;overflow-y:auto;padding:14px}',
+    '.view.on{display:block;animation:fade .2s}',
+    '@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}',
+    'img.loaded{animation:fade .35s}',
+    '.hero{display:flex;gap:16px;align-items:center;padding:14px;border-radius:16px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06)}',
+    '.ringWrap{position:relative;width:128px;height:128px;flex:none}',
+    '.ringWrap svg{position:absolute;inset:0;width:128px;height:128px;transform:rotate(-90deg)}',
+    '.track{fill:none;stroke:rgba(255,255,255,.07);stroke-width:6}',
+    '.ring{fill:none;stroke:url(#rosGrad);stroke-width:6;stroke-linecap:round;stroke-dasharray:339.292;stroke-dashoffset:339.292;transition:stroke-dashoffset .3s linear}',
+    '.ringWrap img{position:absolute;left:12px;top:12px;width:104px;height:104px;border-radius:50%;object-fit:cover;background:radial-gradient(circle at 50% 35%,#2a3142,#141820)}',
+    '.heroInfo{min-width:0;flex:1}',
+    '.lbl{font-size:10.5px;letter-spacing:1.4px;color:#8b93a7;font-weight:700}',
+    '.heroName{font-size:17px;font-weight:700;margin:3px 0 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
+    '.count{font-size:30px;font-weight:800;font-variant-numeric:tabular-nums;background:linear-gradient(90deg,#67e8f9,#a78bfa);-webkit-background-clip:text;background-clip:text;color:transparent;line-height:1.15}',
+    '.count.small{font-size:20px}',
+    '.next{margin-top:6px;font-size:12px;color:#8b93a7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
+    '.next span{color:#cfd5e2}',
+    '.ctrl{display:flex;gap:8px;margin:12px 0}',
+    '.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:42px;padding:0 16px;border-radius:12px;font-weight:700;font-size:13.5px;transition:transform .1s,filter .15s,background .15s}',
+    '.btn:active{transform:scale(.97)}',
+    '.btn svg{width:18px;height:18px}',
+    '.btn.primary{flex:1;background:linear-gradient(135deg,#06b6d4,#7c3aed);box-shadow:0 8px 22px rgba(124,58,237,.35);color:#fff}',
+    '.btn.primary:hover{filter:brightness(1.1)}',
+    '.btn.primary.stop{background:linear-gradient(135deg,#f43f5e,#b91c1c);box-shadow:0 8px 22px rgba(244,63,94,.3)}',
+    '.btn.sq{width:42px;padding:0;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.08)}',
+    '.btn.sq:hover{background:rgba(255,255,255,.12)}',
+    '.btn.ghost{background:rgba(255,255,255,.06);flex:1;height:36px;font-size:12.5px}',
+    '.btn.ghost:hover{background:rgba(255,255,255,.1)}',
+    '.btn.danger{background:rgba(239,68,68,.15);color:#fca5a5;flex:1;height:36px;font-size:12.5px}',
+    '.btn.danger:hover{background:rgba(239,68,68,.25)}',
+    '.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}',
+    '.stats div{padding:10px 6px;border-radius:12px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06);text-align:center;min-width:0}',
+    '.stats b{display:block;font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
+    '.stats span{font-size:10px;color:#8b93a7;text-transform:uppercase;letter-spacing:.6px}',
+    '.secHead{display:flex;justify-content:space-between;align-items:center;margin:16px 2px 8px;font-size:11px;font-weight:700;letter-spacing:1.2px;color:#8b93a7;text-transform:uppercase}',
+    '.link{color:#67e8f9;font-size:12px;font-weight:600;text-transform:none;letter-spacing:0}',
+    '.link:hover{text-decoration:underline}',
+    '.queue{display:flex;gap:8px;overflow-x:auto;padding:3px 2px 8px}',
+    '.q{position:relative;flex:none;width:60px;height:60px;border-radius:14px;background:#1c212c;border:2px solid transparent;overflow:hidden;transition:.15s}',
+    '.q:hover{border-color:rgba(255,255,255,.25);transform:translateY(-2px)}',
+    '.q.cur{border-color:#22d3ee;box-shadow:0 0 0 3px rgba(34,211,238,.18)}',
+    '.q img{width:100%;height:100%;object-fit:cover}',
+    '.q span{position:absolute;left:5px;top:3px;font-size:10px;font-weight:800;color:#fff;text-shadow:0 1px 3px #000}',
+    '.empty{grid-column:1/-1;width:100%;padding:22px;text-align:center;color:#8b93a7;border:1px dashed rgba(255,255,255,.12);border-radius:14px;font-size:12.5px}',
+    '.tools{display:flex;gap:8px;align-items:center}',
+    '.search{flex:1;display:flex;align-items:center;gap:8px;height:36px;padding:0 12px;border-radius:11px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.07)}',
+    '.search:focus-within{border-color:rgba(34,211,238,.5)}',
+    '.search svg{width:16px;height:16px;color:#8b93a7;flex:none}',
+    '.search input{flex:1;min-width:0;background:none;border:0;outline:0;font-size:13px}',
+    '.search input::placeholder{color:#6b7385}',
+    '.tools2{display:flex;align-items:center;gap:6px;margin:10px 0}',
+    '.info{font-size:12px;color:#8b93a7}',
+    '.grow{flex:1}',
+    '.chip{padding:5px 10px;border-radius:99px;font-size:11.5px;font-weight:600;background:rgba(255,255,255,.06);color:#cfd5e2;transition:.15s}',
+    '.chip:hover{background:rgba(255,255,255,.12)}',
+    '.chip.on{background:linear-gradient(135deg,rgba(6,182,212,.35),rgba(124,58,237,.35));color:#fff;box-shadow:inset 0 0 0 1px rgba(103,232,249,.4)}',
+    '.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}',
+    '.card{position:relative;border-radius:14px;padding:6px;background:rgba(255,255,255,.035);border:1.5px solid rgba(255,255,255,.06);cursor:pointer;transition:.15s;user-select:none;min-width:0}',
+    '.card:hover{background:rgba(255,255,255,.065);transform:translateY(-2px)}',
+    '.card img{display:block;width:100%;aspect-ratio:1;border-radius:10px;object-fit:cover;background:radial-gradient(circle at 50% 35%,#262c3a,#141820)}',
+    '.card.sel{border-color:#22d3ee;background:linear-gradient(180deg,rgba(34,211,238,.1),rgba(139,92,246,.08))}',
+    '.badge{position:absolute;top:11px;left:11px;min-width:22px;height:22px;padding:0 6px;border-radius:99px;display:grid;place-items:center;font-size:11px;font-weight:800;background:rgba(0,0,0,.45);border:1.5px solid rgba(255,255,255,.35);color:#fff;transition:.15s}',
+    '.card.sel .badge{background:linear-gradient(135deg,#06b6d4,#7c3aed);border-color:transparent;box-shadow:0 3px 10px rgba(124,58,237,.4)}',
+    '.card.cur:after{content:"WEARING";position:absolute;top:11px;right:11px;font-size:8.5px;font-weight:800;letter-spacing:.8px;padding:3px 6px;border-radius:6px;background:#22c55e;color:#04210f}',
+    '.wear{position:absolute;right:11px;bottom:34px;padding:4px 10px;border-radius:8px;font-size:11px;font-weight:700;background:rgba(0,0,0,.65);color:#fff;opacity:0;transform:translateY(4px);transition:.15s}',
+    '.card:hover .wear{opacity:1;transform:none}',
+    '.wear:hover{background:#0891b2}',
+    '.nm{margin-top:6px;font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}',
+    '.group{padding:14px;border-radius:14px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06);margin-bottom:10px}',
+    '.gh{font-size:11px;font-weight:700;letter-spacing:1.2px;color:#8b93a7;text-transform:uppercase;margin-bottom:10px}',
+    '.row{display:flex;gap:8px;align-items:center}',
+    '.num{width:96px;height:36px;padding:0 12px;border-radius:10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);outline:0;font-size:15px;font-weight:700}',
+    '.num:focus{border-color:rgba(34,211,238,.5)}',
+    '.seg{display:inline-flex;padding:3px;border-radius:11px;background:rgba(255,255,255,.06);gap:2px}',
+    '.seg button{padding:6px 12px;border-radius:8px;font-size:12px;font-weight:600;color:#8b93a7;transition:.15s}',
+    '.seg button:hover{color:#fff}',
+    '.seg button.on{background:linear-gradient(135deg,#06b6d4,#7c3aed);color:#fff;box-shadow:0 3px 10px rgba(124,58,237,.3)}',
+    '.seg.wide{display:flex}',
+    '.seg.wide button{flex:1}',
+    '.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}',
+    '.hint{font-size:11.5px;color:#8b93a7;margin-top:8px}',
+    '.hint.warn{color:#fbbf24}',
+    '.tg{display:flex;align-items:center;gap:12px;padding:9px 0;cursor:pointer}',
+    '.tg+.tg{border-top:1px solid rgba(255,255,255,.05)}',
+    '.tg div{flex:1}',
+    '.tg b{display:block;font-size:13px;font-weight:600}',
+    '.tg small{font-size:11.5px;color:#8b93a7}',
+    '.tg input{display:none}',
+    '.sw{position:relative;width:38px;height:22px;border-radius:99px;background:rgba(255,255,255,.12);transition:.2s;flex:none}',
+    '.sw:after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.4)}',
+    '.tg input:checked+.sw{background:linear-gradient(135deg,#06b6d4,#7c3aed)}',
+    '.tg input:checked+.sw:after{left:19px}',
+    '.credit{text-align:center;font-size:11px;color:#6b7385;margin:8px 0 2px}',
+    '.logs{font-family:ui-monospace,"Cascadia Code",Consolas,monospace;font-size:11.5px;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:8px;height:calc(100% - 48px);overflow-y:auto}',
+    '.lg{display:flex;gap:8px;padding:3px 4px;border-radius:6px}',
+    '.lg:hover{background:rgba(255,255,255,.04)}',
+    '.lg time{color:#5b6376;flex:none}',
+    '.lg span{word-break:break-word;color:#c8cfdc}',
+    '.lg.success span{color:#4ade80}',
+    '.lg.warn span{color:#fbbf24}',
+    '.lg.error span{color:#f87171}',
+    '.pill{position:fixed;top:16px;right:16px;display:flex;align-items:center;gap:10px;padding:6px 6px 6px 12px;border-radius:99px;background:rgba(18,21,29,.96);border:1px solid rgba(255,255,255,.1);box-shadow:0 14px 40px rgba(0,0,0,.5);cursor:grab;user-select:none;animation:pop .2s}',
+    '.pill:active{cursor:grabbing}',
+    '.pill img{width:34px;height:34px;border-radius:50%;object-fit:cover;background:#232a38;flex:none}',
+    '.pt{display:flex;flex-direction:column;max-width:150px;min-width:70px}',
+    '.pt b{font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
+    '.pt span{font-size:11.5px;color:#67e8f9;font-variant-numeric:tabular-nums;font-weight:700}',
+    '.pill .ib.go{background:linear-gradient(135deg,#06b6d4,#7c3aed);color:#fff;border-radius:50%}',
+    '.pill .ib.go.stop{background:linear-gradient(135deg,#f43f5e,#b91c1c)}',
+    '.toasts{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}',
+    '.toast{padding:10px 16px;border-radius:12px;background:rgba(18,21,29,.97);border:1px solid rgba(255,255,255,.12);box-shadow:0 12px 30px rgba(0,0,0,.5);font-weight:600;animation:tin .25s ease-out;transition:.3s}',
+    '.toast.success{border-color:rgba(34,197,94,.55)}.toast.error{border-color:rgba(239,68,68,.65)}.toast.warn{border-color:rgba(245,158,11,.6)}',
+    '.toast.out{opacity:0;transform:translateY(6px)}',
+    '@keyframes tin{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}',
+    '.spin svg{animation:spin 1s linear infinite}',
+    '@keyframes spin{to{transform:rotate(360deg)}}'
+  ].join('\n');
+
+  var TOGGLES = [
+    ['switchOnStart', 'Switch immediately on start', 'Wear the first outfit right away'],
+    ['autoResume', 'Auto-resume', 'Keep rotating when you reopen the bookmark'],
+    ['tabTitle', 'Countdown in tab title', 'See the timer from any tab'],
+    ['notify', 'Desktop notifications', 'Get notified on every switch'],
+    ['warnLeave', 'Warn before leaving', 'Confirm before closing the tab while running'],
+    ['redraw', 'Refresh profile picture', 'Redraw your avatar thumbnail after each switch']
+  ];
+  var PRESETS = [[5, 's'], [10, 's'], [30, 's'], [1, 'm'], [5, 'm'], [15, 'm'], [1, 'h']];
+
+  var HTML =
+    '<div class="panel" id="panel">' +
+      '<header id="head">' +
+        '<div class="logo">👕</div>' +
+        '<div class="ttl"><b>Avatar Rotator</b><span class="status"><i class="dot" id="dot"></i><span id="statusTxt">Paused</span></span></div>' +
+        '<button class="ib" id="minBtn" title="Minimize">' + I.min + '</button>' +
+        '<button class="ib" id="hideBtn" title="Hide (keeps running) — click the bookmark to reopen">' + I.close + '</button>' +
+      '</header>' +
+      '<nav id="tabs">' +
+        '<button data-tab="now" class="on">Rotator</button>' +
+        '<button data-tab="outfits">Outfits<em id="selCount">0</em></button>' +
+        '<button data-tab="settings">Settings</button>' +
+        '<button data-tab="logs">Logs<em id="errCount" class="err hide">0</em></button>' +
+        '<span id="tabInk"></span>' +
+      '</nav>' +
+      '<main>' +
+        '<section class="view on" data-view="now">' +
+          '<div class="hero">' +
+            '<div class="ringWrap">' +
+              '<svg viewBox="0 0 120 120"><defs><linearGradient id="rosGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22d3ee"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs>' +
+              '<circle cx="60" cy="60" r="54" class="track"/><circle cx="60" cy="60" r="54" class="ring" id="ring"/></svg>' +
+              '<img id="heroImg" alt="">' +
+            '</div>' +
+            '<div class="heroInfo">' +
+              '<div class="lbl">NOW WEARING</div>' +
+              '<div class="heroName" id="heroName">Nothing yet</div>' +
+              '<div class="count" id="count">--:--</div>' +
+              '<div class="next">Up next · <span id="nextName">—</span></div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="ctrl"><button class="btn primary" id="toggleBtn"></button><button class="btn sq" id="skipBtn" title="Switch to the next outfit now">' + I.skip + '</button></div>' +
+          '<div class="stats">' +
+            '<div><b id="stSwitch">0</b><span>Switches</span></div>' +
+            '<div><b id="stErr">0</b><span>Errors</span></div>' +
+            '<div><b id="stUp">—</b><span>Running</span></div>' +
+            '<div><b id="stEvery">30s</b><span>Interval</span></div>' +
+          '</div>' +
+          '<div class="secHead"><span>Rotation queue</span><button class="link" id="editQueue">Edit outfits</button></div>' +
+          '<div class="queue" id="queue"></div>' +
+        '</section>' +
+        '<section class="view" data-view="outfits">' +
+          '<div class="tools"><div class="search">' + I.search + '<input id="search" placeholder="Search outfits…"></div>' +
+          '<button class="ib" id="refreshBtn" title="Reload outfits from Roblox">' + I.refresh + '</button></div>' +
+          '<div class="tools2"><span class="info" id="selInfo"></span><span class="grow"></span>' +
+          '<button class="chip" id="selAll">Select all</button><button class="chip" id="selNone">Clear</button></div>' +
+          '<div class="grid" id="grid"></div>' +
+        '</section>' +
+        '<section class="view" data-view="settings">' +
+          '<div class="group"><div class="gh">Switch every</div>' +
+            '<div class="row"><input class="num" type="number" id="intv" min="1" step="1">' +
+            '<div class="seg" id="unitSeg"><button data-v="s">sec</button><button data-v="m">min</button><button data-v="h">hr</button></div></div>' +
+            '<div class="chips" id="presets"></div>' +
+            '<div class="hint" id="intvHint"></div>' +
+          '</div>' +
+          '<div class="group"><div class="gh">Rotation order</div>' +
+            '<div class="seg wide" id="modeSeg"><button data-v="sequential">Sequential</button><button data-v="shuffle">Shuffle</button><button data-v="random">Random</button></div>' +
+            '<div class="hint" id="modeHint"></div>' +
+          '</div>' +
+          '<div class="group"><div class="gh">Behavior</div><div id="toggles"></div></div>' +
+          '<div class="group"><div class="gh">Avatar API</div>' +
+            '<div class="seg wide" id="methodSeg"><button data-v="auto">Auto</button><button data-v="v4">Modern</button><button data-v="legacy">Legacy</button></div>' +
+            '<div class="hint">Auto tries the modern API first, falls back to legacy, and remembers what works.</div>' +
+          '</div>' +
+          '<div class="group"><div class="row"><button class="btn ghost" id="resetBtn">Reset settings</button><button class="btn danger" id="quitBtn">Quit rotator</button></div></div>' +
+          '<div class="credit">Inspired by fowntain\'s Roblox Avatar Rotator · runs in your browser, no cookie needed</div>' +
+        '</section>' +
+        '<section class="view" data-view="logs">' +
+          '<div class="tools2" style="margin-top:0"><div class="seg" id="logSeg"><button data-v="all">All</button><button data-v="info">Info</button><button data-v="warn">Warn</button><button data-v="error">Error</button></div>' +
+          '<span class="grow"></span><button class="chip" id="logCopy">Copy</button><button class="chip" id="logSave">Save</button><button class="chip" id="logClear">Clear</button></div>' +
+          '<div class="logs" id="logList"></div>' +
+        '</section>' +
+      '</main>' +
+    '</div>' +
+    '<div class="pill hide" id="pill"><i class="dot" id="pillDot"></i><img id="pillImg" alt="">' +
+      '<div class="pt"><b id="pillName">Avatar Rotator</b><span id="pillCount">Paused</span></div>' +
+      '<button class="ib go" id="pillToggle"></button><button class="ib" id="pillExpand" title="Expand">' + I.expand + '</button></div>' +
+    '<div class="toasts" id="toasts"></div>';
+
+  var host = document.createElement('div');
+  host.id = '__ros_host';
+  host.style.cssText = 'position:fixed;top:0;left:0;width:0;height:0;z-index:2147483647;';
+  var shadow = host.attachShadow({ mode: 'open' });
+  ui.shadow = shadow;
+  try {
+    var sheet = new CSSStyleSheet();
+    sheet.replaceSync(CSS);
+    shadow.adoptedStyleSheets = [sheet];
+  } catch (e) {
+    var st = document.createElement('style');
+    st.textContent = CSS;
+    shadow.appendChild(st);
+  }
+  var tpl = document.createElement('div');
+  tpl.innerHTML = HTML;
+  while (tpl.firstChild) shadow.appendChild(tpl.firstChild);
+  document.body.appendChild(host);
+
+  function $(id) { return shadow.getElementById(id); }
+  ['panel', 'head', 'dot', 'statusTxt', 'minBtn', 'hideBtn', 'tabs', 'selCount', 'errCount', 'tabInk', 'ring', 'heroImg',
+   'heroName', 'count', 'nextName', 'toggleBtn', 'skipBtn', 'stSwitch', 'stErr', 'stUp', 'stEvery', 'editQueue', 'queue',
+   'search', 'refreshBtn', 'selInfo', 'selAll', 'selNone', 'grid', 'intv', 'unitSeg', 'presets', 'intvHint', 'modeSeg',
+   'modeHint', 'toggles', 'methodSeg', 'resetBtn', 'quitBtn', 'logSeg', 'logCopy', 'logSave', 'logClear', 'logList',
+   'pill', 'pillDot', 'pillImg', 'pillName', 'pillCount', 'pillToggle', 'pillExpand', 'toasts'
+  ].forEach(function (id) { ui[id] = $(id); });
+
+  // ---------------------------------------------------------------- rendering
+  function toast(msg, kind) {
+    var t = document.createElement('div');
+    t.className = 'toast ' + (kind || '');
+    t.textContent = msg;
+    ui.toasts.appendChild(t);
+    setTimeout(function () { t.classList.add('out'); setTimeout(function () { t.remove(); }, 300); }, 2600);
+  }
+
+  function setImg(img, id) {
+    img.classList.remove('loaded');
+    if (id) {
+      img.setAttribute('data-oid', id);
+      if (thumbs[id]) { img.src = thumbs[id]; img.classList.add('loaded'); } else img.removeAttribute('src');
+    } else {
+      img.removeAttribute('data-oid');
+      img.removeAttribute('src');
+    }
+  }
+
+  function setTab(name) {
+    currentTab = name;
+    shadow.querySelectorAll('nav button').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-tab') === name); });
+    shadow.querySelectorAll('.view').forEach(function (v) { v.classList.toggle('on', v.getAttribute('data-view') === name); });
+    moveInk();
+    if (name === 'logs') ui.logList.scrollTop = ui.logList.scrollHeight;
+  }
+  function moveInk() {
+    var b = shadow.querySelector('nav button.on');
+    if (!b) return;
+    ui.tabInk.style.left = b.offsetLeft + 'px';
+    ui.tabInk.style.width = b.offsetWidth + 'px';
+  }
+
+  function setGridMessage(msg) {
+    ui.grid.textContent = '';
+    ui.cards = {};
+    var d = document.createElement('div');
+    d.className = 'empty';
+    d.textContent = msg;
+    ui.grid.appendChild(d);
+  }
+
+  function renderOutfits() {
+    if (!outfits.length) { setGridMessage('No outfits found. Save outfits in the Roblox Avatar Editor, then press refresh.'); return; }
+    var q = searchTerm.toLowerCase();
+    var list = outfits.filter(function (o) { return !q || o.name.toLowerCase().indexOf(q) >= 0; });
+    if (!list.length) { setGridMessage('No outfits match "' + searchTerm + '"'); return; }
+    ui.grid.textContent = '';
+    ui.cards = {};
+    list.forEach(function (o) {
+      var c = document.createElement('div');
+      c.className = 'card';
+      c.title = o.name;
+      var img = document.createElement('img');
+      img.alt = '';
+      img.setAttribute('data-oid', o.id);
+      if (thumbs[o.id]) { img.src = thumbs[o.id]; img.classList.add('loaded'); }
+      var badge = document.createElement('span');
+      badge.className = 'badge';
+      var wear = document.createElement('button');
+      wear.className = 'wear';
+      wear.textContent = 'Wear';
+      wear.title = 'Wear this outfit now';
+      wear.onclick = function (e) { e.stopPropagation(); doSwitch(o.id, true); };
+      var nm = document.createElement('div');
+      nm.className = 'nm';
+      nm.textContent = o.name;
+      c.appendChild(img);
+      c.appendChild(badge);
+      c.appendChild(wear);
+      c.appendChild(nm);
+      c.onclick = function () { toggleSel(o); };
+      ui.grid.appendChild(c);
+      ui.cards[o.id] = c;
+    });
+    updateCards();
+  }
+
+  function updateCards() {
+    var ids = selIds();
+    Object.keys(ui.cards).forEach(function (k) {
+      var c = ui.cards[k];
+      var i = ids.indexOf(Number(k));
+      c.classList.toggle('sel', i >= 0);
+      c.querySelector('.badge').textContent = i >= 0 ? String(i + 1) : '';
+      c.classList.toggle('cur', !!(R.current && String(R.current.id) === k));
+    });
+    ui.selInfo.textContent = S.selected.length + ' of ' + outfits.length + ' selected';
+  }
+
+  function toggleSel(o) {
+    var i = selIds().indexOf(o.id);
+    if (i >= 0) S.selected.splice(i, 1);
+    else S.selected.push({ id: o.id, name: o.name });
+    save();
+    renderAll();
+  }
+
+  function renderQueue() {
+    ui.queue.textContent = '';
+    if (!S.selected.length) {
+      var d = document.createElement('div');
+      d.className = 'empty';
+      d.textContent = 'No outfits in the rotation yet. Open the Outfits tab and pick a few.';
+      ui.queue.appendChild(d);
+      return;
+    }
+    S.selected.forEach(function (s, i) {
+      var b = document.createElement('button');
+      b.className = 'q' + (R.current && R.current.id === s.id ? ' cur' : '');
+      b.title = s.name + ' — click to wear now';
+      var img = document.createElement('img');
+      img.alt = '';
+      setImg(img, s.id);
+      var n = document.createElement('span');
+      n.textContent = String(i + 1);
+      b.appendChild(img);
+      b.appendChild(n);
+      b.onclick = function () { doSwitch(s.id, true); };
+      ui.queue.appendChild(b);
+    });
+  }
+
+  function renderAll() {
+    var run = R.running;
+    var st = R.busy ? 'busy' : run ? 'on' : '';
+    ui.dot.className = 'dot ' + st;
+    ui.pillDot.className = 'dot ' + st;
+    ui.statusTxt.textContent = R.busy ? 'Switching…' : run ? 'Rotating every ' + fmtInterval() : 'Paused';
+    ui.toggleBtn.innerHTML = run ? I.stop + '<span>Stop rotation</span>' : I.play + '<span>Start rotation</span>';
+    ui.toggleBtn.classList.toggle('stop', run);
+    ui.pillToggle.innerHTML = run ? I.stop : I.play;
+    ui.pillToggle.classList.toggle('stop', run);
+    ui.pillToggle.title = run ? 'Stop' : 'Start';
+    ui.selCount.textContent = S.selected.length;
+    ui.stSwitch.textContent = R.switches;
+    ui.stErr.textContent = R.errors;
+    ui.stEvery.textContent = fmtInterval();
+    ui.errCount.textContent = R.errors;
+    ui.errCount.classList.toggle('hide', !R.errors);
+    var cur = R.current;
+    ui.heroName.textContent = cur ? cur.name : 'Nothing yet';
+    ui.pillName.textContent = cur ? cur.name : 'Avatar Rotator';
+    if (ui.heroImg.getAttribute('data-oid') !== String(cur ? cur.id : '')) {
+      setImg(ui.heroImg, cur && cur.id);
+      setImg(ui.pillImg, cur && cur.id);
+    }
+    var nx = peekNext();
+    ui.nextName.textContent = nx === 'random' ? '🎲 Random pick' : nx === 'shuffle' ? '🔀 New shuffle' : nx ? nameOf(nx) : '—';
+    renderQueue();
+    updateCards();
+    updateClock();
+  }
+
+  function updateClock() {
+    var now = Date.now();
+    var remain = R.running ? Math.max(0, R.nextAt - now) : 0;
+    var prog = R.busy ? 1 : R.running && R.cycleMs ? Math.min(1, 1 - remain / R.cycleMs) : 0;
+    var txt = R.busy ? 'Switching…' : R.running ? fmt(remain) : '--:--';
+    if (ui.count.textContent !== txt) ui.count.textContent = txt;
+    ui.count.classList.toggle('small', R.busy);
+    ui.pillCount.textContent = R.busy ? 'Switching…' : R.running ? 'Next in ' + fmt(remain) : 'Paused';
+    ui.ring.style.strokeDashoffset = String(CIRC * (1 - prog));
+    ui.stUp.textContent = R.running ? fmt(now - R.startedAt) : '—';
+    if (R.running && S.tabTitle) {
+      document.title = (R.busy ? '⟳ Switching · ' : '⏱ ' + fmt(remain) + ' · ') + (R.current ? R.current.name : 'Avatar Rotator');
+    }
+  }
+
+  function syncSettings() {
+    ui.intv.value = S.interval;
+    markSeg(ui.unitSeg, S.unit);
+    markSeg(ui.modeSeg, S.mode);
+    markSeg(ui.methodSeg, S.method);
+    markSeg(ui.logSeg, logFilter);
+    ui.modeHint.textContent = {
+      sequential: 'Goes through your queue in order (1 → 2 → 3 …).',
+      shuffle: 'Plays every outfit once in a random order, then reshuffles.',
+      random: 'Picks any outfit at random each time (never the same twice in a row).'
+    }[S.mode];
+    shadow.querySelectorAll('#presets .chip').forEach(function (c) {
+      c.classList.toggle('on', +c.getAttribute('data-n') === +S.interval && c.getAttribute('data-u') === S.unit);
+    });
+    var raw = (+S.interval || 0) * (UNIT_MS[S.unit] || 1000);
+    ui.intvHint.className = 'hint' + (raw < 5000 ? ' warn' : '');
+    ui.intvHint.textContent = raw < 2000 ? '⚠ Minimum is 2 seconds — 2s will be used.'
+      : raw < 5000 ? '⚠ Under 5s sends lots of requests and may hit Roblox rate limits.'
+      : 'Your avatar switches every ' + fmt(raw).replace(/^0:/, '') + (raw < 60000 ? ' seconds.' : '.');
+    TOGGLES.forEach(function (t) { var cb = shadow.getElementById('tg_' + t[0]); if (cb) cb.checked = !!S[t[0]]; });
+  }
+  function markSeg(seg, v) {
+    seg.querySelectorAll('button').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-v') === v); });
+  }
+  function bindSeg(seg, fn) {
+    seg.addEventListener('click', function (e) {
+      var b = e.target.closest('button');
+      if (b && b.getAttribute('data-v')) fn(b.getAttribute('data-v'));
+    });
+  }
+
+  function onIntervalChange() {
+    save();
+    if (R.running && !R.busy) {
+      var ms = intervalMs();
+      if (R.nextAt - Date.now() > ms) R.nextAt = Date.now() + ms;
+      R.cycleMs = ms;
+    }
+    syncSettings();
+    renderAll();
+  }
+
+  // ---------------------------------------------------------------- placement / dragging
+  function clampPos(x, y, el) {
+    var w = el.offsetWidth || 400, h = el.offsetHeight || 60;
+    return {
+      x: Math.min(Math.max(0, x), Math.max(0, innerWidth - w)),
+      y: Math.min(Math.max(0, y), Math.max(0, innerHeight - Math.min(h, 60)))
+    };
+  }
+  function place() {
+    [ui.panel, ui.pill].forEach(function (el) {
+      if (S.pos) {
+        var p = clampPos(S.pos.x, S.pos.y, el);
+        el.style.left = p.x + 'px';
+        el.style.top = p.y + 'px';
+        el.style.right = 'auto';
+      } else {
+        el.style.left = el.style.top = el.style.right = '';
+      }
+    });
+  }
+  function makeDrag(handle, el) {
+    handle.addEventListener('pointerdown', function (e) {
+      if (e.button !== 0 || e.target.closest('button,input')) return;
+      var rect = el.getBoundingClientRect();
+      var dx = e.clientX - rect.left, dy = e.clientY - rect.top;
+      handle.setPointerCapture(e.pointerId);
+      function mv(ev) { S.pos = clampPos(ev.clientX - dx, ev.clientY - dy, el); place(); }
+      function up() {
+        handle.removeEventListener('pointermove', mv);
+        handle.removeEventListener('pointerup', up);
+        save();
+      }
+      handle.addEventListener('pointermove', mv);
+      handle.addEventListener('pointerup', up);
+    });
+  }
+  function applyMin() {
+    ui.panel.classList.toggle('hide', !!S.minimized);
+    ui.pill.classList.toggle('hide', !S.minimized);
+    place();
+    if (!S.minimized) moveInk();
+  }
+
+  // ---------------------------------------------------------------- wiring
+  ui.tabs.addEventListener('click', function (e) {
+    var b = e.target.closest('button');
+    if (b) setTab(b.getAttribute('data-tab'));
+  });
+  ui.toggleBtn.onclick = function () { if (R.running) stop(); else start(); };
+  ui.pillToggle.onclick = ui.toggleBtn.onclick;
+  ui.skipBtn.onclick = function () { doSwitch(null, true); };
+  ui.editQueue.onclick = function () { setTab('outfits'); };
+  ui.minBtn.onclick = function () { S.minimized = true; save(); applyMin(); };
+  ui.pillExpand.onclick = function () { S.minimized = false; save(); applyMin(); };
+  ui.pill.ondblclick = function (e) { if (!e.target.closest('button')) ui.pillExpand.onclick(); };
+  ui.hideBtn.onclick = function () { host.style.display = 'none'; };
+  makeDrag(ui.head, ui.panel);
+  makeDrag(ui.pill, ui.pill);
+
+  ui.search.addEventListener('input', function () { searchTerm = ui.search.value.trim(); renderOutfits(); });
+  ui.refreshBtn.onclick = function () { loadOutfits(); };
+  ui.selAll.onclick = function () {
+    var ids = selIds();
+    outfits.forEach(function (o) { if (ids.indexOf(o.id) < 0) S.selected.push({ id: o.id, name: o.name }); });
+    save();
+    renderAll();
+  };
+  ui.selNone.onclick = function () { S.selected = []; save(); renderAll(); };
+
+  PRESETS.forEach(function (p) {
+    var c = document.createElement('button');
+    c.className = 'chip';
+    c.setAttribute('data-n', p[0]);
+    c.setAttribute('data-u', p[1]);
+    c.textContent = p[0] + p[1];
+    c.onclick = function () { S.interval = p[0]; S.unit = p[1]; onIntervalChange(); };
+    ui.presets.appendChild(c);
+  });
+  ui.intv.addEventListener('input', function () {
+    var v = parseFloat(ui.intv.value);
+    if (v > 0) { S.interval = v; save(); syncSettings(); renderAll(); }
+  });
+  ui.intv.addEventListener('change', function () {
+    var v = parseFloat(ui.intv.value);
+    if (!(v > 0)) v = DEFAULTS.interval;
+    S.interval = v;
+    onIntervalChange();
+  });
+  bindSeg(ui.unitSeg, function (v) { S.unit = v; onIntervalChange(); });
+  bindSeg(ui.modeSeg, function (v) { S.mode = v; R.orderMode = null; save(); syncSettings(); renderAll(); });
+  bindSeg(ui.methodSeg, function (v) { S.method = v; R.method = null; save(); syncSettings(); log('Avatar API set to ' + v); });
+  bindSeg(ui.logSeg, function (v) { logFilter = v; markSeg(ui.logSeg, v); renderLogs(); });
+
+  TOGGLES.forEach(function (t) {
+    var l = document.createElement('label');
+    l.className = 'tg';
+    var d = document.createElement('div');
+    var b = document.createElement('b');
+    b.textContent = t[1];
+    var sm = document.createElement('small');
+    sm.textContent = t[2];
+    d.appendChild(b);
+    d.appendChild(sm);
+    var cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.id = 'tg_' + t[0];
+    var sw = document.createElement('span');
+    sw.className = 'sw';
+    l.appendChild(d);
+    l.appendChild(cb);
+    l.appendChild(sw);
+    cb.addEventListener('change', function () {
+      S[t[0]] = cb.checked;
+      save();
+      if (t[0] === 'tabTitle' && !cb.checked) restoreTitle();
+      if (t[0] === 'notify' && cb.checked) {
+        if (!('Notification' in window)) { cb.checked = S.notify = false; save(); toast('Notifications not supported', 'warn'); return; }
+        Notification.requestPermission().then(function (p) {
+          if (p !== 'granted') { cb.checked = S.notify = false; save(); toast('Notification permission was denied', 'warn'); }
+          else toast('Notifications enabled', 'success');
+        });
+      }
+    });
+    ui.toggles.appendChild(l);
+  });
+
+  ui.resetBtn.onclick = function () {
+    if (!confirm('Reset all settings to defaults? Your outfit selection is kept.')) return;
+    var keep = { selected: S.selected, pos: S.pos, wasRunning: S.wasRunning };
+    Object.assign(S, JSON.parse(JSON.stringify(DEFAULTS)), keep);
+    save();
+    syncSettings();
+    applyMin();
+    renderAll();
+    toast('Settings reset', 'success');
+  };
+  ui.quitBtn.onclick = function () { quit(); };
+
+  ui.logCopy.onclick = function () {
+    navigator.clipboard.writeText(logText()).then(function () { toast('Log copied', 'success'); }, function () { toast('Could not copy', 'error'); });
+  };
+  ui.logSave.onclick = function () {
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([logText()], { type: 'text/plain' }));
+    a.download = 'avatar-rotator-log.txt';
+    a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 5000);
+  };
+  ui.logClear.onclick = function () { logs = []; renderLogs(); };
+
+  function onLeave(e) {
+    if (R.running && S.warnLeave) { e.preventDefault(); e.returnValue = ''; return ''; }
+  }
+  window.addEventListener('beforeunload', onLeave);
+  window.addEventListener('resize', place);
+
+  // Timer: a worker keeps ticking in background tabs (if the page's CSP allows it); the
+  // interval below takes over whenever the worker isn't delivering ticks.
+  var worker = null;
+  try {
+    worker = new Worker(URL.createObjectURL(new Blob(['setInterval(function(){postMessage(1)},250)'], { type: 'text/javascript' })));
+    worker.onmessage = tick;
+    worker.onerror = function () { try { worker.terminate(); } catch (e) {} worker = null; };
+  } catch (e) { worker = null; }
+  var timer = setInterval(function () { if (Date.now() - lastTick > 400) tick(); }, 250);
+
+  function quit() {
+    if (R.running && !confirm('Stop the rotation and close Avatar Rotator?')) return;
+    stop();
+    clearInterval(timer);
+    if (worker) worker.terminate();
+    window.removeEventListener('beforeunload', onLeave);
+    window.removeEventListener('resize', place);
+    host.remove();
+    delete window.__ROS;
+  }
+
+  window.__ROS = {
+    toggle: function () {
+      if (host.style.display === 'none') { host.style.display = ''; place(); moveInk(); }
+      else host.style.display = 'none';
+    },
+    quit: quit
+  };
+
+  // ---------------------------------------------------------------- boot
+  syncSettings();
+  applyMin();
+  setTab('now');
+  renderAll();
+  renderLogs();
+  log('Avatar Rotator ready');
+  loadOutfits().then(function () {
+    if (S.autoResume && S.wasRunning && S.selected.length && !R.running) {
+      log('Resuming your previous rotation');
+      start();
+    }
+  }).catch(function (e) { log('Startup error: ' + e.message, 'error'); });
+}
+
+// ============================================================================
+//  Landing page: turn the function above into a draggable bookmark.
+// ============================================================================
+var code = 'javascript:' + encodeURIComponent('(' + robloxAvatarRotator.toString() + ')();void 0');
+document.getElementById('bm').href = code;
+document.getElementById('copy').onclick = function () {
+  navigator.clipboard.writeText(code).then(function () {
+    document.getElementById('copied').style.display = 'inline';
+  });
+};
+</script>
+</body>
 </html>
