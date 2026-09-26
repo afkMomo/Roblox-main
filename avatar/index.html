@@ -3,94 +3,91 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Avatar Rotator for Roblox – Bookmarklet</title>
-<style>
-  * { box-sizing: border-box; }
-  body { margin: 0; font-family: "Segoe UI", system-ui, -apple-system, sans-serif; background: #0b0d12; color: #e9ecf3; line-height: 1.6; }
-  .bg { position: fixed; inset: 0; z-index: -1; background:
-      radial-gradient(60% 50% at 15% 0%, rgba(34,211,238,.18), transparent 70%),
-      radial-gradient(60% 50% at 85% 10%, rgba(139,92,246,.22), transparent 70%),
-      radial-gradient(50% 40% at 50% 100%, rgba(59,130,246,.10), transparent 70%); }
-  .wrap { max-width: 920px; margin: 0 auto; padding: 56px 24px 80px; }
-  .badge { display: inline-block; padding: 4px 12px; border-radius: 99px; font-size: 12px; font-weight: 700; letter-spacing: .6px;
-    background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1); color: #a5b4fc; }
-  h1 { font-size: 48px; line-height: 1.1; margin: 16px 0 10px; letter-spacing: -1px; }
-  h1 span { background: linear-gradient(90deg, #67e8f9, #a78bfa); -webkit-background-clip: text; background-clip: text; color: transparent; }
-  .lead { font-size: 18px; color: #9aa3b5; max-width: 640px; margin: 0; }
-  .install { margin: 36px 0; padding: 28px; border-radius: 22px; background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
-    border: 1px solid rgba(255,255,255,.08); display: flex; gap: 28px; align-items: center; flex-wrap: wrap; }
-  .drag { display: inline-flex; align-items: center; gap: 12px; padding: 18px 30px; border-radius: 16px; font-size: 19px; font-weight: 800;
-    color: #fff; text-decoration: none; cursor: grab; background: linear-gradient(135deg, #06b6d4, #7c3aed);
-    box-shadow: 0 12px 40px rgba(124,58,237,.45), inset 0 1px 0 rgba(255,255,255,.25); animation: glow 2.4s ease-in-out infinite; }
-  .drag:active { cursor: grabbing; }
-  @keyframes glow { 50% { box-shadow: 0 12px 56px rgba(34,211,238,.55), inset 0 1px 0 rgba(255,255,255,.25); } }
-  .steps { flex: 1; min-width: 280px; margin: 0; padding-left: 20px; color: #c8cfdc; }
-  .steps li { margin: 4px 0; }
-  kbd, code { font-family: ui-monospace, Consolas, monospace; font-size: 12.5px; padding: 2px 7px; border-radius: 6px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.08); }
-  .alt { margin-top: 14px; font-size: 13px; color: #8b93a7; width: 100%; }
-  button.copy { font: inherit; font-size: 13px; font-weight: 600; color: #e9ecf3; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12);
-    padding: 6px 14px; border-radius: 10px; cursor: pointer; margin-left: 6px; }
-  button.copy:hover { background: rgba(255,255,255,.14); }
-  .ok { color: #4ade80; margin-left: 8px; display: none; }
-  h2 { font-size: 22px; margin: 48px 0 16px; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
-  .f { padding: 18px; border-radius: 16px; background: rgba(255,255,255,.035); border: 1px solid rgba(255,255,255,.07); }
-  .f b { display: block; margin: 8px 0 4px; font-size: 15px; }
-  .f p { margin: 0; font-size: 13.5px; color: #9aa3b5; }
-  .f .i { font-size: 22px; }
-  .note { padding: 18px 20px; border-radius: 16px; font-size: 14px; margin-top: 14px; }
-  .note.info { background: rgba(59,130,246,.08); border: 1px solid rgba(59,130,246,.3); }
-  .note.warn { background: rgba(245,158,11,.07); border: 1px solid rgba(245,158,11,.35); }
-  .note ul { margin: 6px 0 0; padding-left: 20px; }
-  footer { margin-top: 56px; font-size: 13px; color: #6b7385; text-align: center; }
-</style>
+<meta name="description" content="Rotate your Roblox avatar through your saved outfits on a timer with a browser bookmarklet.">
+<title>Avatar Rotator: Roblox Toolkit</title>
+<script src="/theme.js"></script>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource-variable/geist@5/index.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource-variable/geist-mono@5/index.min.css">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+<link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-<div class="bg"></div>
-<div class="wrap">
-  <span class="badge">BOOKMARKLET · NO INSTALL · NO COOKIE NEEDED</span>
-  <h1>Avatar <span>Rotator</span> for Roblox</h1>
-  <p class="lead">Automatically cycle your Roblox avatar through your saved outfits on a timer — so it's different every time someone looks. Runs right inside your logged-in Roblox tab.</p>
+<header class="nav">
+  <div class="nav-inner container">
+    <a class="brand" href="/"><span class="brand-mark" aria-hidden="true">R</span>Roblox Toolkit</a>
+    <nav class="nav-links" aria-label="Main">
+      <a href="/#tools">Tools</a>
+      <a href="/usernamefinder">Username finder</a>
+      <a href="/avatar" aria-current="page">Avatar rotator</a>
+    </nav>
+    <div class="nav-actions">
+      <a class="icon-btn" href="https://github.com/afkMomo/Roblox-main" target="_blank" rel="noreferrer" aria-label="GitHub repository"><i class="ph ph-github-logo"></i></a>
+      <button class="icon-btn" type="button" data-theme-toggle aria-label="Toggle dark mode"><i class="ph ph-moon when-light"></i><i class="ph ph-sun when-dark"></i></button>
+    </div>
+  </div>
+</header>
 
-  <div class="install">
-    <a class="drag" id="bm" href="#" onclick="alert('Drag this button onto your bookmarks bar — don\'t click it here.'); return false;">👕 Avatar Rotator</a>
+<main class="container">
+  <div class="page-head">
+    <span class="pill rise"><i class="ph ph-bookmark-simple"></i> Browser bookmarklet, nothing to install</span>
+    <h1 class="rise" style="--i:1">Avatar rotator</h1>
+    <p class="rise" style="--i:2">Cycle your Roblox avatar through your saved outfits on a timer, right inside your logged-in Roblox tab.</p>
+  </div>
+
+  <div class="install card rise" style="--i:3">
+    <a class="drag" id="bm" href="#" onclick="alert('Drag this button onto your bookmarks bar. Don\'t click it here.'); return false;"><i class="ph ph-t-shirt"></i> Avatar Rotator</a>
     <ol class="steps">
-      <li>Show your bookmarks bar with <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd></li>
-      <li><b>Drag</b> the glowing button onto the bar</li>
+      <li>Show your bookmarks bar with <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>B</kbd></li>
+      <li><b>Drag</b> the blue button onto the bar</li>
       <li>Open <code>www.roblox.com</code> while logged in</li>
-      <li>Click the bookmark → pick outfits → set a timer → <b>Start</b></li>
+      <li>Click the bookmark, pick outfits, set a timer, then press <b>Start</b></li>
     </ol>
-    <div class="alt">Can't drag? <button class="copy" id="copy">Copy bookmarklet code</button><span class="ok" id="copied">✓ Copied — create a new bookmark and paste it as the URL</span></div>
+    <div class="install-alt">
+      Can't drag it?
+      <button class="btn btn-secondary btn-sm" id="copy" type="button"><i class="ph ph-copy"></i> Copy bookmarklet code</button>
+      <span class="copied" id="copied" hidden><i class="ph ph-check"></i> Copied. Create a new bookmark and paste this as its URL.</span>
+    </div>
   </div>
 
-  <h2>Features</h2>
-  <div class="grid">
-    <div class="f"><span class="i">⏱</span><b>Auto-switch timer</b><p>Seconds, minutes or hours, with one-tap presets. A live countdown ring shows when the next switch happens.</p></div>
-    <div class="f"><span class="i">🧥</span><b>Visual outfit picker</b><p>All your saved outfits with thumbnails, search, select all/clear. Numbered badges show the rotation order.</p></div>
-    <div class="f"><span class="i">🔀</span><b>Sequential, Shuffle, Random</b><p>Go in order, shuffle each cycle, or pick randomly. It never repeats the same outfit twice in a row.</p></div>
-    <div class="f"><span class="i">⏭</span><b>Start, Stop, Skip, Wear now</b><p>Control everything live. Click any outfit or queue item to wear it instantly.</p></div>
-    <div class="f"><span class="i">💊</span><b>Minimize to a floating pill</b><p>Shrink it into a draggable mini player with the countdown. The window remembers where you put it.</p></div>
-    <div class="f"><span class="i">💾</span><b>Remembers everything</b><p>Your outfits, timer and options are saved. Auto-resume continues rotating when you reopen it.</p></div>
-    <div class="f"><span class="i">📜</span><b>Detailed logs</b><p>Every request is logged with filters, copy and save-to-file for troubleshooting.</p></div>
-    <div class="f"><span class="i">🔔</span><b>Notifications and tab countdown</b><p>Optional desktop notifications, countdown in the tab title, and a warning before you close the tab while it's running.</p></div>
-    <div class="f"><span class="i">🛡</span><b>Rate-limit safe</b><p>Backs off automatically when Roblox rate-limits and stops after repeated failures. Outfit data is cached so fewer requests are sent.</p></div>
-  </div>
+  <section class="sub-section">
+    <h2>Features</h2>
+    <div class="features">
+      <div class="feature"><span class="tool-icon"><i class="ph ph-timer"></i></span><b>Auto-switch timer</b><p>Seconds, minutes, or hours, with one-tap presets. A live countdown ring shows when the next switch happens.</p></div>
+      <div class="feature"><span class="tool-icon"><i class="ph ph-t-shirt"></i></span><b>Visual outfit picker</b><p>All your saved outfits with thumbnails, search, and select all. Numbered badges show the rotation order.</p></div>
+      <div class="feature"><span class="tool-icon"><i class="ph ph-shuffle"></i></span><b>Sequential, shuffle, random</b><p>Go in order, shuffle each cycle, or pick randomly. It never wears the same outfit twice in a row.</p></div>
+      <div class="feature"><span class="tool-icon"><i class="ph ph-skip-forward"></i></span><b>Start, stop, skip, wear now</b><p>Control everything live. Click any outfit or queue item to wear it instantly.</p></div>
+      <div class="feature"><span class="tool-icon"><i class="ph ph-picture-in-picture"></i></span><b>Minimize to a floating pill</b><p>Shrink it into a draggable mini player with the countdown. It remembers where you put it.</p></div>
+      <div class="feature"><span class="tool-icon"><i class="ph ph-floppy-disk"></i></span><b>Remembers everything</b><p>Outfits, timer, and options are saved. Auto-resume continues rotating when you reopen it.</p></div>
+      <div class="feature"><span class="tool-icon"><i class="ph ph-scroll"></i></span><b>Detailed logs</b><p>Every request is logged with filters, copy, and save-to-file for troubleshooting.</p></div>
+      <div class="feature"><span class="tool-icon"><i class="ph ph-bell"></i></span><b>Notifications and tab countdown</b><p>Optional desktop notifications, a countdown in the tab title, and a warning before you close a running tab.</p></div>
+      <div class="feature"><span class="tool-icon"><i class="ph ph-gauge"></i></span><b>Rate-limit safe</b><p>Backs off when Roblox rate limits and stops after repeated failures. Outfit data is cached to send fewer requests.</p></div>
+    </div>
+  </section>
 
-  <h2>Good to know</h2>
-  <div class="note info">
-    <ul>
-      <li><b>Keep a Roblox tab open.</b> The rotator runs inside that tab. If you close it or leave roblox.com, it stops. Click the bookmark again to resume.</li>
-      <li>Background tabs can be throttled by the browser, so switches may run a little late when the tab isn't visible. A separate browser window works best.</li>
-      <li>This changes your <b>account</b> avatar. Other players see the new outfit when you respawn or rejoin a game.</li>
-      <li>Click the bookmark again to hide or show the panel. The rotation keeps running while it's hidden.</li>
-    </ul>
-  </div>
-  <div class="note warn">
-    <b>⚠ Safety:</b> This only talks to <code>*.roblox.com</code> with your existing login, and the full source code is in this HTML file. Never install a Roblox bookmarklet from someone else without reading it first. It runs with full access to your account.
-  </div>
+  <section class="sub-section callouts">
+    <div class="callout">
+      <h3><i class="ph ph-info"></i> Good to know</h3>
+      <ul>
+        <li><b>Keep a Roblox tab open.</b> The rotator runs inside that tab. If you close it or leave roblox.com, it stops. Click the bookmark again to resume.</li>
+        <li>Browsers throttle background tabs, so switches can run a little late when the tab isn't visible. A separate browser window works best.</li>
+        <li>This changes your <b>account</b> avatar. Other players see the new outfit when you respawn or rejoin a game.</li>
+        <li>Click the bookmark again to hide or show the panel. The rotation keeps running while it's hidden.</li>
+      </ul>
+    </div>
+    <div class="callout warn">
+      <h3><i class="ph ph-shield-check"></i> Safety</h3>
+      <p>It only talks to <code>*.roblox.com</code> using your existing login, and the full source code is in this page. Never install a Roblox bookmarklet from someone else without reading it first. It runs with full access to your account.</p>
+    </div>
+  </section>
+</main>
 
-  <footer><a href="/" style="color:#67e8f9;text-decoration:none">← Back to home</a><br><br>Inspired by <b>fowntain</b>'s Roblox Avatar Rotator (AGPL-3.0) · rebuilt as a browser bookmarklet</footer>
-</div>
+<footer class="footer">
+  <div class="container">
+    <span>Inspired by fowntain's Roblox Avatar Rotator (AGPL-3.0), rebuilt as a browser bookmarklet.</span>
+    <span>Not affiliated with Roblox Corporation.</span>
+  </div>
+</footer>
 
 <script>
 // ============================================================================
@@ -1207,7 +1204,7 @@ var code = 'javascript:' + encodeURIComponent('(' + robloxAvatarRotator.toString
 document.getElementById('bm').href = code;
 document.getElementById('copy').onclick = function () {
   navigator.clipboard.writeText(code).then(function () {
-    document.getElementById('copied').style.display = 'inline';
+    document.getElementById('copied').hidden = false;
   });
 };
 </script>

@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Find available Roblox usernames that match your length, character, and pattern rules.">
+  <title>Username Finder: Roblox Toolkit</title>
+  <script src="/theme.js"></script>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource-variable/geist@5/index.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource-variable/geist-mono@5/index.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+  <link rel="stylesheet" href="/styles.css">
+  <script defer src="/usernamefinder/finder.js"></script>
+</head>
+<body>
+  <header class="nav">
+    <div class="nav-inner container">
+      <a class="brand" href="/"><span class="brand-mark" aria-hidden="true">R</span>Roblox Toolkit</a>
+      <nav class="nav-links" aria-label="Main">
+        <a href="/#tools">Tools</a>
+        <a href="/usernamefinder" aria-current="page">Username finder</a>
+        <a href="/avatar">Avatar rotator</a>
+      </nav>
+      <div class="nav-actions">
+        <a class="icon-btn" href="https://github.com/afkMomo/Roblox-main" target="_blank" rel="noreferrer" aria-label="GitHub repository"><i class="ph ph-github-logo"></i></a>
+        <button class="icon-btn" type="button" data-theme-toggle aria-label="Toggle dark mode"><i class="ph ph-moon when-light"></i><i class="ph ph-sun when-dark"></i></button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="page-head">
+      <h1 class="rise">Username finder</h1>
+      <p class="rise" style="--i:1">Set your rules, and it keeps generating names and checking them against Roblox until it finds ones that are free.</p>
+    </div>
+
+    <div class="finder">
+      <form id="finder" class="finder-form card rise" style="--i:2" novalidate>
+        <div class="row-2">
+          <div class="field">
+            <label for="min">Min length</label>
+            <input id="min" name="min" class="input" type="number" min="3" max="20" value="5" required>
+          </div>
+          <div class="field">
+            <label for="max">Max length</label>
+            <input id="max" name="max" class="input" type="number" min="3" max="20" value="8" required>
+          </div>
+        </div>
+
+        <fieldset class="field fieldset">
+          <legend class="label">Characters</legend>
+          <div class="checks">
+            <label class="check"><input type="checkbox" name="letters" checked> Letters</label>
+            <label class="check"><input type="checkbox" name="digits" checked> Numbers</label>
+            <label class="check"><input type="checkbox" name="underscore"> Underscore</label>
+          </div>
+        </fieldset>
+
+        <fieldset class="field fieldset">
+          <legend class="label">Style</legend>
+          <div class="checks">
+            <label class="check"><input type="radio" name="style" value="random" checked> Random</label>
+            <label class="check"><input type="radio" name="style" value="pronounceable"> Pronounceable</label>
+          </div>
+          <p class="hint">Pronounceable mixes consonants and vowels, like <code>tovaki</code>.</p>
+        </fieldset>
+
+        <div class="row-3">
+          <div class="field">
+            <label for="prefix">Starts with</label>
+            <input id="prefix" name="prefix" class="input" maxlength="20" autocomplete="off" spellcheck="false">
+          </div>
+          <div class="field">
+            <label for="contains">Contains</label>
+            <input id="contains" name="contains" class="input" maxlength="20" autocomplete="off" spellcheck="false">
+          </div>
+          <div class="field">
+            <label for="suffix">Ends with</label>
+            <input id="suffix" name="suffix" class="input" maxlength="20" autocomplete="off" spellcheck="false">
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="count">How many to find</label>
+          <input id="count" name="count" class="input" type="number" min="1" max="50" value="10" required>
+        </div>
+
+        <p id="form-error" class="form-error" role="alert" hidden><i class="ph ph-warning-circle"></i><span id="form-error-text"></span></p>
+
+        <div class="form-actions">
+          <button id="start" class="btn btn-primary" type="submit"><i class="ph ph-magnifying-glass"></i> Find usernames</button>
+          <button id="stop" class="btn btn-secondary" type="button" disabled><i class="ph ph-stop"></i> Stop</button>
+        </div>
+      </form>
+
+      <section class="results card rise" style="--i:3" aria-labelledby="results-title">
+        <h2 id="results-title" class="sr-only">Results</h2>
+        <div class="results-head">
+          <div class="stats" aria-live="polite">
+            <span class="ok"><b id="stat-found" class="mono">0</b>available</span>
+            <span><b id="stat-taken" class="mono">0</b>taken</span>
+            <span><b id="stat-checked" class="mono">0</b>checked</span>
+          </div>
+          <button id="copy-all" class="btn btn-ghost btn-sm" type="button" disabled><i class="ph ph-copy"></i> Copy all</button>
+        </div>
+        <div class="progress"><span id="bar"></span></div>
+
+        <p id="notice" class="notice" role="status" hidden><i class="ph ph-warning"></i><span id="notice-text"></span></p>
+
+        <ul id="results" class="result-list"></ul>
+        <ul id="loading" class="result-list" aria-hidden="true" hidden>
+          <li class="skeleton"></li><li class="skeleton"></li><li class="skeleton"></li>
+        </ul>
+
+        <div id="empty" class="empty">
+          <i class="ph ph-at"></i>
+          <strong id="empty-title">Available names show up here</strong>
+          <span id="empty-text">Set your rules on the left and press Find usernames.</span>
+        </div>
+
+        <p class="hint results-foot">Checked live against Roblox. Someone else can still claim a name before you do, so sign up soon.</p>
+      </section>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <span>© 2026 Roblox Toolkit</span>
+      <span>Independent community project. Not affiliated with Roblox Corporation.</span>
+    </div>
+  </footer>
+</body>
+</html>
