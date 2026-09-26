@@ -70,7 +70,7 @@ const json = (status, body) => ({status, ok: status < 300, json: async () => bod
 
   assert.strictEqual((await call('names=')).status, 400);
   assert.strictEqual((await call('names=a_b_c')).status, 400);
-  assert.strictEqual((await call(`names=${Array.from({length: 26}, (_, i) => 'name' + i).join(',')}`)).status, 400);
+  assert.strictEqual((await call(`names=${Array.from({length: 101}, (_, i) => 'name' + i).join(',')}`)).status, 400);
 
   const roblox = global.fetch;
   global.fetch = async () => json(429, {});

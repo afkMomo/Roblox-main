@@ -4,7 +4,7 @@
 // The checking logic is shared with the browser fallback in usernamefinder/finder.js.
 const {VALID_NAME, RateLimited, checkNames} = require('../usernamefinder/finder.js');
 
-const MAX_NAMES = 25;
+const MAX_NAMES = 100; // Roblox's batch lookup limit
 
 module.exports = async (req, res) => {
   res.setHeader('content-type', 'application/json');

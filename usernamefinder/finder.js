@@ -173,7 +173,11 @@ if (typeof document === 'object' && document.getElementById('finder')) {
 
     while (live() && found.length < target) {
       if (checked >= MAX_CHECKS) { setNotice(`Stopped after checking ${MAX_CHECKS.toLocaleString()} names. Loosen your rules and try again.`); break; }
-      const batch = nextBatch(o, seen, Math.min(20, Math.max(5, (target - found.length) * 2)));
+      // Size batches to the hit rate so far. Hard rules (mostly taken) get up to 100 names, which the
+      // single batch lookup clears in one request; easy rules stay small so few names hit the validator.
+      const rate = checked ? found.length / checked : .5;
+      const size = Math.min(100, Math.max(5, Math.ceil((target - found.length) / Math.max(rate, .01) * 1.2)));
+      const batch = nextBatch(o, seen, size);
       if (!batch.length) { setNotice('No new names left to try with these rules. Allow a longer length or fewer fixed characters.'); break; }
 
       let results;
