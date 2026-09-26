@@ -151,7 +151,7 @@ select.input { appearance: none; padding-right: 32px; background: var(--surface)
 
 /* ---------- Home: hero ---------- */
 .hero { display: grid; grid-template-columns: 1.15fr .85fr; gap: 64px; align-items: center; padding-top: 80px; padding-bottom: 72px; }
-.hero h1 { font-size: clamp(38px, 5vw, 56px); line-height: 1.05; letter-spacing: -.04em; max-width: 12ch; }
+.hero h1 { font-size: clamp(38px, 5vw, 56px); line-height: 1.05; letter-spacing: -.04em; text-wrap: balance; }
 .hero-sub { margin-top: 20px; font-size: 17px; color: var(--muted); max-width: 44ch; }
 .hero-cta { display: flex; gap: 12px; margin-top: 32px; flex-wrap: wrap; }
 
@@ -298,7 +298,7 @@ select.input { appearance: none; padding-right: 32px; background: var(--surface)
 .sub-section { padding-top: 64px; }
 .sub-section h2 { font-size: 24px; margin-bottom: 24px; }
 .features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px 28px; }
-.feature { display: grid; grid-template-columns: 40px 1fr; gap: 4px 14px; }
+.feature { display: grid; grid-template-columns: 40px 1fr; gap: 4px 14px; align-content: start; }
 .feature .tool-icon { grid-row: span 2; }
 .feature b { font-size: 15px; font-weight: 600; }
 .feature p { font-size: 13.5px; color: var(--muted); }
