@@ -1,6 +1,7 @@
-// Username finder: generate names from the user's rules, check them via /api/check,
+// Username finder: generate names from the user's rules, check them against Roblox,
 // keep going until enough available names are found.
-// The pure helpers at the top are also loaded by test/finder.test.cjs.
+// Everything above the `document` block is shared: api/check.js and test/check.test.cjs require it,
+// and the home page loads it for its quick check.
 
 const VALID_NAME = /^(?=.{3,20}$)[A-Za-z0-9]+(?:_[A-Za-z0-9]+)?$/;
 const LETTERS = 'abcdefghijklmnopqrstuvwxyz', DIGITS = '0123456789';
@@ -59,9 +60,55 @@ function nextBatch(o, seen, size) {
   return batch;
 }
 
-if (typeof module === 'object') module.exports = {VALID_NAME, criteriaError, generate, nextBatch};
+class RateLimited extends Error {}
 
-if (typeof document === 'object') {
+// -> [{name, status: "available" | "taken" | "unavailable", message}], same order as `names`.
+// 1. One batch lookup removes names that belong to existing accounts (cheap, 1 request).
+// 2. The rest go through Roblox's signup validator, which also catches filtered or reserved names.
+// host is "roblox.com" on the server, or "roproxy.com" (public Roblox mirror that allows CORS) in the browser.
+async function checkNames(names, host) {
+  const get = async (url, init) => {
+    const res = await fetch(url, init);
+    if (res.status === 429) throw new RateLimited();
+    if (!res.ok) throw new Error(`Roblox responded ${res.status}`);
+    return res.json();
+  };
+  // text/plain keeps this a "simple" request with no CORS preflight (RoProxy doesn't answer those).
+  const {data} = await get(`https://users.${host}/v1/usernames/users`, {
+    method: 'POST',
+    headers: {'content-type': 'text/plain'},
+    body: JSON.stringify({usernames: names, excludeBannedUsers: false}),
+  });
+  const taken = new Set(data.map(u => u.requestedUsername.toLowerCase()));
+  const results = names.map(name =>
+    taken.has(name.toLowerCase()) ? {name, status: 'taken', message: 'Username is already in use'} : null);
+
+  const validate = async name => {
+    const q = new URLSearchParams({Username: name, Birthday: '2000-01-01T00:00:00.000Z'});
+    const {code, message} = await get(`https://auth.${host}/v1/usernames/validate?${q}`);
+    results[names.indexOf(name)] = {name, status: code === 0 ? 'available' : code === 1 ? 'taken' : 'unavailable', message};
+  };
+  const todo = names.filter((_, i) => !results[i]);
+  for (let i = 0; i < todo.length; i += 5) await Promise.all(todo.slice(i, i + 5).map(validate));
+  return results;
+}
+
+// Browser entry point: our Vercel function when it's deployed, otherwise straight to RoProxy
+// (GitHub Pages and other static hosts have no /api).
+let useApi = true;
+async function lookup(names) {
+  if (useApi) {
+    const res = await fetch(`/api/check?names=${encodeURIComponent(names.join(','))}`).catch(() => null);
+    if (res && res.status === 429) throw new RateLimited();
+    if (res && res.ok) return (await res.json()).results;
+    useApi = false;
+  }
+  return checkNames(names, 'roproxy.com');
+}
+
+if (typeof module === 'object') module.exports = {VALID_NAME, RateLimited, criteriaError, generate, nextBatch, checkNames, lookup};
+
+if (typeof document === 'object' && document.getElementById('finder')) {
   const MAX_CHECKS = 2000; // ponytail: hard stop so impossible rules can't hammer Roblox forever
   const $ = s => document.querySelector(s);
   const form = $('#finder'), list = $('#results'), notice = $('#notice');
@@ -129,24 +176,24 @@ if (typeof document === 'object') {
       const batch = nextBatch(o, seen, Math.min(20, Math.max(5, (target - found.length) * 2)));
       if (!batch.length) { setNotice('No new names left to try with these rules. Allow a longer length or fewer fixed characters.'); break; }
 
-      let res;
+      let results;
       try {
-        res = await fetch(`/api/check?names=${encodeURIComponent(batch.join(','))}`);
-      } catch {
-        res = null;
+        results = await lookup(batch);
+      } catch (e) {
+        if (!live()) return;
+        if (e instanceof RateLimited) {
+          setNotice('Roblox is rate limiting requests. Resuming in 15 seconds.');
+          batch.forEach(n => seen.delete(n.toLowerCase()));
+          await sleep(15000);
+          continue;
+        }
+        setNotice('Could not reach Roblox right now. Try again in a moment.');
+        break;
       }
       if (!live()) return;
-      if (res && res.status === 429) {
-        const {retryAfter = 15} = await res.json().catch(() => ({}));
-        setNotice(`Roblox is rate limiting requests. Resuming in ${retryAfter} seconds.`);
-        batch.forEach(n => seen.delete(n.toLowerCase()));
-        await sleep(retryAfter * 1000);
-        continue;
-      }
-      if (!res || !res.ok) { setNotice('Could not reach Roblox. Check your connection and try again.'); break; }
 
       setNotice('');
-      for (const r of (await res.json()).results) {
+      for (const r of results) {
         checked++;
         if (r.status === 'available' && found.length < target) addResult(r.name);
         else if (r.status === 'taken') taken++;

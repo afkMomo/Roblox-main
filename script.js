@@ -99,8 +99,7 @@ document.addEventListener('keydown', e => {
 });
 render();
 
-// Quick username check (uses the same /api/check endpoint as /usernamefinder).
-const VALID_NAME = /^(?=.{3,20}$)[A-Za-z0-9]+(?:_[A-Za-z0-9]+)?$/;
+// Quick username check. VALID_NAME and lookup() come from /usernamefinder/finder.js.
 const quickStatus = $('#quick-status');
 const esc = s => String(s).replace(/[&<>"']/g, c => `&#${c.charCodeAt(0)};`);
 function setQuick(kind, icon, html) {
@@ -116,9 +115,7 @@ $('#quick').addEventListener('submit', async e => {
   const safe = name; // VALID_NAME guarantees [A-Za-z0-9_] only, so this is safe to put in HTML.
   setQuick('', 'circle-notch', `Checking <b>${safe}</b>...`);
   try {
-    const res = await fetch(`/api/check?names=${encodeURIComponent(name)}`);
-    if (!res.ok) throw new Error(res.status);
-    const [r] = (await res.json()).results;
+    const [r] = await lookup([name]);
     if (r.status === 'available') setQuick('is-ok', 'check-circle', `<b>${safe}</b> is available.`);
     else if (r.status === 'taken') setQuick('is-taken', 'x-circle', `<b>${safe}</b> is already taken.`);
     else setQuick('is-warn', 'warning', `Roblox won't allow <b>${safe}</b>. ${esc(r.message)}.`);

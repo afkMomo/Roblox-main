@@ -72,10 +72,22 @@ const json = (status, body) => ({status, ok: status < 300, json: async () => bod
   assert.strictEqual((await call('names=a_b_c')).status, 400);
   assert.strictEqual((await call(`names=${Array.from({length: 26}, (_, i) => 'name' + i).join(',')}`)).status, 400);
 
+  const roblox = global.fetch;
   global.fetch = async () => json(429, {});
-  const limited = await call('names=freeone');
-  assert.strictEqual(limited.status, 429);
-  assert.ok(limited.body.retryAfter > 0);
+  assert.strictEqual((await call('names=freeone')).status, 429);
+
+  // Browser on a static host (GitHub Pages): /api/check 404s, so it falls back to RoProxy directly.
+  const {lookup} = require('../usernamefinder/finder.js');
+  const hosts = [];
+  global.fetch = async (url, init) => {
+    if (url.startsWith('/api/')) return json(404, {});
+    hosts.push(new URL(url).host);
+    if (init && init.method === 'POST') assert.strictEqual(init.headers['content-type'], 'text/plain', 'no CORS preflight');
+    return roblox(url, init);
+  };
+  const viaProxy = await lookup(['BuilderMan', 'freeone']);
+  assert.deepStrictEqual(viaProxy.map(x => x.status), ['taken', 'available']);
+  assert.deepStrictEqual(hosts, ['users.roproxy.com', 'auth.roproxy.com']);
 
   console.log('all checks passed');
 })();
