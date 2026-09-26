@@ -6,8 +6,12 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 const results = new Map(); // lowercased name -> lookup() result
 let colorFilter = -1, runId = 0, names = [];
 
-// Usernames (and their colors) ignore case, so "Momo" and "momo" count once.
-const parse = () => [...new Map(input.value.split(/[\s,;]+/).filter(Boolean).map(n => [n.toLowerCase(), n])).values()].slice(0, 5000);
+// Usernames (and their colors) ignore case, so "Momo" and "momo" count once, as first typed.
+const parse = () => {
+  const seen = new Map();
+  for (const n of input.value.split(/[\s,;]+/)) if (n && !seen.has(n.toLowerCase())) seen.set(n.toLowerCase(), n);
+  return [...seen.values()].slice(0, 5000);
+};
 
 const BADGES = {
   available: ['is-ok', 'Available'],

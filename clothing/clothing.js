@@ -32,14 +32,14 @@ controls.target.copy(TARGET);
 Object.assign(controls, {enableDamping: true, dampingFactor: .08, enablePan: false, minDistance: 6, maxDistance: 22, minPolarAngle: .35, maxPolarAngle: 1.75, autoRotateSpeed: 2.4});
 controls.update();
 
-scene.add(new THREE.HemisphereLight(0xffffff, 0x9a9aa6, 2.1));
-const key = new THREE.DirectionalLight(0xffffff, 1.5);
-key.position.set(4, 8, 7);
-const fill = new THREE.DirectionalLight(0xffffff, .5);
-fill.position.set(-7, 3, 2);
-const rim = new THREE.DirectionalLight(0xffffff, .6);
-rim.position.set(0, 6, -8);
-scene.add(key, fill, rim);
+// Balanced so the front shows the template's true colors while sides and back still read as 3D.
+scene.add(new THREE.HemisphereLight(0xffffff, 0x7d7d88, 1.2));
+const lights = [[2.6, 6, 10, 9], [.9, -9, 3, 4], [1.1, -2, 7, -9], [.6, 4, 3, -8]].map(([power, x, y, z]) => {
+  const light = new THREE.DirectionalLight(0xffffff, power);
+  light.position.set(x, y, z);
+  return light;
+});
+scene.add(...lights);
 
 // Soft contact shadow under the feet.
 const shadowCanvas = Object.assign(document.createElement('canvas'), {width: 128, height: 128});
@@ -361,7 +361,9 @@ document.addEventListener('change', e => {
 $('#skin-custom').addEventListener('input', e => { state.skin = e.target.value; paint(); });
 
 build();
-paint();
 drawFace();
+$('#example').click(); // open on the labeled example outfit, seen at 3/4
+camera.position.setFromSpherical(new THREE.Spherical(13, 1.43, .65)).add(controls.target);
+document.querySelectorAll('[data-view]').forEach(x => x.setAttribute('aria-pressed', x.dataset.view === '0.65'));
 stage.classList.remove('is-loading');
 $('#stage-msg').remove();
