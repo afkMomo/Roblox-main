@@ -40,6 +40,15 @@
     <div class="studio">
       <section class="viewer card rise" style="--i:2" aria-label="3D preview">
         <div id="stage" class="stage is-loading">
+          <div class="stage-overlay">
+            <div class="segmented" role="group" aria-label="Pose">
+              <button type="button" data-pose="stand">Stand</button>
+              <button type="button" data-pose="idle">Idle</button>
+              <button type="button" data-pose="walk">Walk</button>
+              <button type="button" data-pose="wave">Wave</button>
+              <button type="button" data-pose="tpose">T-pose</button>
+            </div>
+          </div>
           <p class="stage-msg" id="stage-msg">Loading 3D preview...</p>
         </div>
         <div class="viewer-bar">

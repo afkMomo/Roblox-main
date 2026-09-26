@@ -9,19 +9,21 @@ const W = 585, H = 559;
 const TORSO = [[361, 74, 64, 128], [165, 74, 64, 128], [231, 8, 128, 64], [231, 204, 128, 64], [231, 74, 128, 128], [427, 74, 128, 128]];
 const RIGHT_LIMB = [[19, 355, 64, 128], [151, 355, 64, 128], [217, 289, 64, 64], [217, 485, 64, 64], [217, 355, 64, 128], [85, 355, 64, 128]];
 const LEFT_LIMB = [[374, 355, 64, 128], [506, 355, 64, 128], [308, 289, 64, 64], [308, 485, 64, 64], [308, 355, 64, 128], [440, 355, 64, 128]];
-const RIGS = {R6: {torso: [1], limb: [1]}, R15: {torso: [.78, .22], limb: [.46, .4, .14]}};
-const GAP = .045; // seam between R15 segments
+const BEVEL = .06;   // rounded edges on every body part, like Roblox's own body meshes
+const OVERLAP = .08; // R15 lower segments tuck into the one above so bent joints never show a gap
 const TARGET = new THREE.Vector3(0, 2.55, 0);
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const $ = s => document.querySelector(s);
 const stage = $('#stage');
-const state = {rig: 'R6', skin: '#a3a2a5', face: 'smile', layers: {shirt: null, pants: null, tshirt: null}};
+const state = {rig: 'R6', skin: '#a3a2a5', face: 'smile', pose: reduceMotion ? 'stand' : 'idle', layers: {shirt: null, pants: null, tshirt: null}};
 
 // ---------- Renderer, camera, lights ----------
 const renderer = new THREE.WebGLRenderer({antialias: true, alpha: true, preserveDrawingBuffer: true});
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 stage.append(renderer.domElement);
 
 const scene = new THREE.Scene();
@@ -40,6 +42,15 @@ const lights = [[2.6, 6, 10, 9], [.9, -9, 3, 4], [1.1, -2, 7, -9], [.6, 4, 3, -8
   return light;
 });
 scene.add(...lights);
+const key = lights[0];
+key.castShadow = true;
+key.shadow.mapSize.set(2048, 2048);
+Object.assign(key.shadow.camera, {left: -4, right: 4, top: 7, bottom: -2, near: 4, far: 30});
+key.shadow.normalBias = .03;
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(24, 24), new THREE.ShadowMaterial({opacity: .16}));
+ground.rotation.x = -Math.PI / 2;
+ground.receiveShadow = true;
+scene.add(ground);
 
 // Soft contact shadow under the feet.
 const shadowCanvas = Object.assign(document.createElement('canvas'), {width: 128, height: 128});
@@ -117,56 +128,150 @@ function drawFace() {
 }
 
 // ---------- Character ----------
-function setFaceUV(geo, face, [x, y, w, h]) {
-  const uv = geo.attributes.uv, i = face * 4;
-  const u0 = (x + .5) / W, u1 = (x + w - .5) / W, top = 1 - (y + .5) / H, bottom = 1 - (y + h - .5) / H;
-  // BoxGeometry face corners: top-left, top-right, bottom-left, bottom-right (as seen from outside).
-  uv.setXY(i, u0, top); uv.setXY(i + 1, u1, top); uv.setXY(i + 2, u0, bottom); uv.setXY(i + 3, u1, bottom);
+// A bevelled box whose six faces show the given template regions. Each vertex is projected onto
+// its own face, so the rounded edges wrap the template the way Roblox's body meshes do.
+// RoundedBoxGeometry is non-indexed with its faces in six equal runs: +x, -x, +y, -y, +z, -z.
+function texturedBox(w, h, d, regions, material) {
+  const geo = new RoundedBoxGeometry(w, h, d, 2, BEVEL);
+  const pos = geo.attributes.position, uv = geo.attributes.uv, perFace = pos.count / 6;
+  const unit = n => Math.min(1, Math.max(0, n));
+  for (let i = 0; i < pos.count; i++) {
+    const f = Math.floor(i / perFace);
+    const X = pos.getX(i) / w + .5, Y = pos.getY(i) / h + .5, Z = pos.getZ(i) / d + .5;
+    // [u from the image's left edge, v from its bottom] as each face is seen from outside
+    const [u, v] = [[1 - Z, Y], [Z, Y], [X, 1 - Z], [X, Z], [X, Y], [1 - X, Y]][f];
+    const [rx, ry, rw, rh] = regions[f];
+    uv.setXY(i, (rx + .5 + unit(u) * (rw - 1)) / W, 1 - (ry + .5 + (1 - unit(v)) * (rh - 1)) / H);
+  }
+  const mesh = new THREE.Mesh(geo, material);
+  mesh.castShadow = true;
+  return mesh;
 }
 
-// One body part, split into stacked segments for R15. Side faces get a slice of their region;
-// only the outer ends get the Up/Down regions (inner caps sit in the seams).
-function part(w, h, d, regions, material, splits) {
-  const group = new THREE.Group();
-  let from = 0, y = h / 2;
-  splits.forEach((ratio, i) => {
-    const last = i === splits.length - 1;
-    const segH = h * ratio - (last ? 0 : GAP);
-    const slice = ([x, ry, rw, rh]) => [x, ry + rh * from, rw, rh * ratio];
-    const [fx, fy, fw, fh] = regions[4];
-    const faces = [slice(regions[0]), slice(regions[1]),
-      i === 0 ? regions[2] : [fx, fy + fh * from, fw, 1],
-      last ? regions[3] : [fx, fy + fh * (from + ratio) - 1, fw, 1],
-      slice(regions[4]), slice(regions[5])];
-    const geo = new THREE.BoxGeometry(w, segH, d);
-    faces.forEach((r, f) => setFaceUV(geo, f, r));
-    const mesh = new THREE.Mesh(geo, material);
-    mesh.position.y = y - segH / 2;
-    group.add(mesh);
-    y -= h * ratio;
-    from += ratio;
-  });
-  return group;
+// The part of a template between a and b (0 = top of the body part, 1 = bottom), for R15 segments.
+// Cut ends that sit inside a joint get a 1px strip of the front instead of the Up/Down squares.
+function slice(regions, a, b) {
+  const side = ([x, y, w, h]) => [x, y + h * a, w, h * (b - a)];
+  const [fx, fy, fw, fh] = regions[4];
+  return [side(regions[0]), side(regions[1]),
+    a === 0 ? regions[2] : [fx, fy + fh * a, fw, 1],
+    b === 1 ? regions[3] : [fx, fy + fh * b - 1, fw, 1],
+    side(regions[4]), side(regions[5])];
 }
 
+// ---------- Rig ----------
+// Every moving part hangs off a joint (a Group at the pivot point), so poses are just joint rotations.
+// Heights in studs: legs 0 to 2, torso 2 to 4, head on top. The character faces +z.
 const character = new THREE.Group();
 scene.add(character);
+let J = {};
+
+function joint(parent, x, y) {
+  const g = new THREE.Group();
+  g.position.set(x, y, 0);
+  parent.add(g);
+  return g;
+}
+function attach(parent, mesh, y) {
+  mesh.position.y = y;
+  parent.add(mesh);
+}
+
+// An R15 limb: upper (0.9), lower (0.8) and end piece (0.3), 2 studs in all, each tucked into the one above.
+// `pivot` is how far below the limb's top its joint sits (shoulders 0.5, hips 0).
+function r15Limb(parent, x, y, regions, material, [upper, lower, end], pivot) {
+  const top = joint(parent, x, y);
+  attach(top, texturedBox(1, .9, 1, slice(regions, 0, .45), material), pivot - .45);
+  const mid = J[lower] = joint(top, 0, pivot - .9);
+  attach(mid, texturedBox(.97, .8 + OVERLAP, .97, slice(regions, .45, .85), material), (OVERLAP - .8) / 2);
+  const tip = J[end] = joint(mid, 0, -.8);
+  attach(tip, texturedBox(.94, .3 + OVERLAP, .94, slice(regions, .85, 1), material), (OVERLAP - .3) / 2);
+  J[upper] = top;
+}
+
 function build() {
   character.traverse(o => o.geometry && o.geometry.dispose());
   character.clear();
-  const {torso, limb} = RIGS[state.rig];
-  const add = (obj, x, y) => { obj.position.set(x, y, 0); character.add(obj); };
-  add(part(2, 2, 1, TORSO, mats.torso, torso), 0, 3);
-  add(part(1, 2, 1, RIGHT_LIMB, mats.arms, limb), -1.5, 3);
-  add(part(1, 2, 1, LEFT_LIMB, mats.arms, limb), 1.5, 3);
-  add(part(1, 2, 1, RIGHT_LIMB, mats.legs, limb), -.5, 1);
-  add(part(1, 2, 1, LEFT_LIMB, mats.legs, limb), .5, 1);
-  const head = new THREE.Group();
-  head.add(new THREE.Mesh(new RoundedBoxGeometry(1.22, 1.22, 1.22, 4, .24), skinMat));
+  J = {root: joint(character, 0, 2)}; // hips
+  if (state.rig === 'R6') {
+    attach(J.root, texturedBox(2, 2, 1, TORSO, mats.torso), 1);
+    J.neck = joint(J.root, 0, 2);
+    J.rShoulder = joint(J.root, -1.5, 1.5); // R6 shoulders pivot half a stud below the top of the arm
+    attach(J.rShoulder, texturedBox(1, 2, 1, RIGHT_LIMB, mats.arms), -.5);
+    J.lShoulder = joint(J.root, 1.5, 1.5);
+    attach(J.lShoulder, texturedBox(1, 2, 1, LEFT_LIMB, mats.arms), -.5);
+    J.rHip = joint(J.root, -.5, 0);
+    attach(J.rHip, texturedBox(1, 2, 1, RIGHT_LIMB, mats.legs), -1);
+    J.lHip = joint(J.root, .5, 0);
+    attach(J.lHip, texturedBox(1, 2, 1, LEFT_LIMB, mats.legs), -1);
+  } else {
+    attach(J.root, texturedBox(2, .4, 1, slice(TORSO, .8, 1), mats.torso), .2);        // LowerTorso
+    J.waist = joint(J.root, 0, .4);
+    attach(J.waist, texturedBox(2, 1.6, 1, slice(TORSO, 0, .8), mats.torso), .8);      // UpperTorso
+    J.neck = joint(J.waist, 0, 1.6);
+    r15Limb(J.waist, -1.5, 1.1, RIGHT_LIMB, mats.arms, ['rShoulder', 'rElbow', 'rWrist'], .5);
+    r15Limb(J.waist, 1.5, 1.1, LEFT_LIMB, mats.arms, ['lShoulder', 'lElbow', 'lWrist'], .5);
+    r15Limb(J.root, -.5, 0, RIGHT_LIMB, mats.legs, ['rHip', 'rKnee', 'rAnkle'], 0);
+    r15Limb(J.root, .5, 0, LEFT_LIMB, mats.legs, ['lHip', 'lKnee', 'lAnkle'], 0);
+  }
+  const head = new RoundedBoxGeometry(1.22, 1.22, 1.22, 4, .24);
+  const headMesh = new THREE.Mesh(head, skinMat);
+  headMesh.castShadow = true;
+  attach(J.neck, headMesh, .62);
   const face = new THREE.Mesh(new THREE.PlaneGeometry(1.02, 1.02), new THREE.MeshStandardMaterial({map: faceTex, transparent: true, roughness: .9}));
-  face.position.z = .612;
-  head.add(face);
-  add(head, 0, 4 + .61 + (state.rig === 'R15' ? .03 : 0));
+  face.position.set(0, .62, .612);
+  J.neck.add(face);
+}
+
+// ---------- Poses ----------
+// Each pose returns joint rotations [x, y, z] in radians, plus an optional hip drop.
+// Positive x swings a limb backwards; negative z lifts the right arm out to the side (positive for the left).
+const POSES = {
+  stand: () => ({rShoulder: [0, 0, -.05], lShoulder: [0, 0, .05]}),
+  idle: t => {
+    const b = Math.sin(t * 1.8);
+    return {
+      rShoulder: [.035 * b, 0, -.07 - .02 * b], lShoulder: [.035 * b, 0, .07 + .02 * b],
+      rElbow: [-.14, 0, 0], lElbow: [-.14, 0, 0],
+      neck: [.03 * Math.sin(t * .9), .08 * Math.sin(t * .5), 0], waist: [.02 * b, 0, 0],
+    };
+  },
+  walk: t => {
+    const p = t * 6.5, s = Math.sin(p), c = Math.cos(p);
+    const swing = state.rig === 'R6' ? .7 : .55;
+    return {
+      drop: 2 * (1 - Math.cos(swing * s * .8)), // the body dips while the legs are spread
+      rHip: [swing * s, 0, 0], lHip: [-swing * s, 0, 0],
+      rKnee: [.95 * Math.max(0, -c), 0, 0], lKnee: [.95 * Math.max(0, c), 0, 0], // bend while swinging forward
+      rAnkle: [-.3 * Math.max(0, -c), 0, 0], lAnkle: [-.3 * Math.max(0, c), 0, 0],
+      rShoulder: [-swing * .85 * s, 0, -.05], lShoulder: [swing * .85 * s, 0, .05],
+      rElbow: [-.35 - .15 * Math.max(0, s), 0, 0], lElbow: [-.35 - .15 * Math.max(0, -s), 0, 0],
+      waist: [.04, .09 * s, 0], neck: [0, -.09 * s, 0],
+    };
+  },
+  wave: t => {
+    const w = Math.sin(t * 7.5);
+    return state.rig === 'R6'
+      ? {rShoulder: [0, 0, -2.55 + .28 * w], lShoulder: [0, 0, .06], neck: [0, 0, -.07]}
+      : {rShoulder: [-.15, 0, -2.25], rElbow: [0, 0, -.35 + .5 * w], lShoulder: [0, 0, .06], lElbow: [-.12, 0, 0], neck: [0, 0, -.07]};
+  },
+  tpose: () => ({rShoulder: [0, 0, -Math.PI / 2], lShoulder: [0, 0, Math.PI / 2]}),
+};
+
+// Joints ease toward the pose, so switching poses (or rigs) blends instead of snapping.
+const eased = {};
+function animate(dt, t) {
+  const goal = POSES[state.pose](t);
+  const k = 1 - Math.exp(-dt * 10);
+  for (const name in J) {
+    if (name === 'root') continue;
+    const cur = eased[name] || (eased[name] = [0, 0, 0]);
+    const target = goal[name] || [0, 0, 0];
+    for (let a = 0; a < 3; a++) cur[a] += (target[a] - cur[a]) * k;
+    J[name].rotation.set(cur[0], cur[1], cur[2]);
+  }
+  eased.drop = (eased.drop || 0) + ((goal.drop || 0) - (eased.drop || 0)) * k;
+  J.root.position.y = 2 - eased.drop;
 }
 
 // ---------- Camera ----------
@@ -200,8 +305,12 @@ new ResizeObserver(([entry]) => {
   camera.updateProjectionMatrix();
 }).observe(stage);
 
+let last = performance.now();
 renderer.setAnimationLoop(now => {
+  const dt = Math.min(.1, (now - last) / 1000);
+  last = now;
   if (tween) tween(now);
+  animate(dt, now / 1000);
   controls.update();
   renderer.render(scene, camera);
 });
@@ -274,7 +383,9 @@ function clearSlot(slot) {
 }
 
 async function loadFromRoblox(slot, raw) {
-  const id = (raw.match(/\d{3,}/) || [])[0];
+  // Catalog/marketplace links (roblox.com/catalog/123/..., create.roblox.com/store/asset/123/...), ?id=123, or a bare id.
+  const m = raw.match(/(?:catalog|asset|library)\/(\d+)|[?&]id=(\d+)|(\d{3,})/i);
+  const id = m && (m[1] || m[2] || m[3]);
   if (!id) return note(slot, 'Enter a Roblox item ID or catalog link.', 'is-warn');
   note(slot, 'Loading from Roblox...');
   const res = await api(`/api/clothing?id=${id}`); // api() from roblox.js
@@ -322,6 +433,13 @@ document.querySelectorAll('[data-view]').forEach(b => b.addEventListener('click'
   setSpin(false);
   orbitTo(+b.dataset.view);
 }));
+document.querySelectorAll('[data-pose]').forEach(b => {
+  b.setAttribute('aria-pressed', b.dataset.pose === state.pose);
+  b.addEventListener('click', () => {
+    state.pose = b.dataset.pose;
+    document.querySelectorAll('[data-pose]').forEach(x => x.setAttribute('aria-pressed', x === b));
+  });
+});
 $('#zoom-in').addEventListener('click', () => zoom(.85));
 $('#zoom-out').addEventListener('click', () => zoom(1 / .85));
 $('#spin').addEventListener('click', () => setSpin(!controls.autoRotate));

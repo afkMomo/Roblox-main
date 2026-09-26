@@ -165,5 +165,36 @@ function call(handler, query) {
   assert.strictEqual((await call(clothing, 'id=777')).status, 415, 'non-clothing asset types are refused');
   assert.strictEqual((await call(clothing, 'id=12ab')).status, 400);
 
+  // Newer items: the legacy endpoint wants sign-in. Without a key we say why; with one, Open Cloud serves it.
+  const pantsModel = Buffer.from('<Item class="Pants"><Content name="PantsTemplate"><url>rbxassetid://901</url></Content></Item>');
+  const calls = [];
+  global.fetch = async (url, init = {}) => {
+    calls.push([url, (init.headers || {})['x-api-key']]);
+    if (url.includes('/details')) throw new Error('economy down'); // details are optional
+    if (url.startsWith('https://apis.roblox.com/asset-delivery-api/v1/assetId/')) {
+      return init.headers['x-api-key'] === 'test-key'
+        ? json(200, {location: url.endsWith('/900') ? 'https://cdn/pants' : 'https://cdn/png'})
+        : json(401, {errors: [{message: 'Invalid authentication data provided'}]});
+    }
+    if (url.includes('assetdelivery.roblox.com')) return json(401, {errors: [{code: 401, message: 'Authentication required to access Asset.'}]});
+    if (url === 'https://cdn/pants') return json(200, pantsModel);
+    if (url === 'https://cdn/png') return json(200, png);
+    throw new Error(`unexpected ${url}`);
+  };
+  delete process.env.ROBLOX_API_KEY;
+  const noKey = await call(clothing, 'id=900');
+  assert.strictEqual(noKey.status, 401);
+  assert.match(JSON.parse(noKey.body).error, /API key/);
+  assert.ok(!calls.some(([u]) => u.includes('apis.roblox.com')), 'no Open Cloud call without a key');
+
+  process.env.ROBLOX_API_KEY = 'test-key';
+  calls.length = 0;
+  const withKey = await call(clothing, 'id=900');
+  assert.strictEqual(withKey.status, 200);
+  assert.strictEqual(withKey.headers['x-asset-type'], 'pants', 'type read from the item when details are down');
+  assert.ok(png.equals(withKey.body));
+  assert.deepStrictEqual(calls.filter(([u]) => u.includes('apis.roblox.com')).map(([u, k]) => [u.split('/').pop(), k]), [['900', 'test-key'], ['901', 'test-key']]);
+  delete process.env.ROBLOX_API_KEY;
+
   console.log('all checks passed');
 })();
