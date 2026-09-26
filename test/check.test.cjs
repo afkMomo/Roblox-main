@@ -88,7 +88,7 @@ for (let b; (b = nextBatch(gen3, seen, 100)).length;) total += b.length;
 assert.strictEqual(total, 1000);
 
 // API handlers
-const json = (status, body) => ({status, ok: status < 300, json: async () => body, arrayBuffer: async () => body});
+const json = (status, body) => ({status, ok: status < 300, headers: {get: () => 'application/json'}, json: async () => body, arrayBuffer: async () => body});
 function call(handler, query) {
   return new Promise(resolve => {
     const res = {statusCode: 200, headers: {}, setHeader(k, v) { this.headers[k] = v; }, end(body) { resolve({status: this.statusCode, headers: this.headers, body}); }};
@@ -122,15 +122,27 @@ function call(handler, query) {
   global.fetch = async () => json(429, {});
   assert.strictEqual((await call(check, 'names=freeone')).status, 429);
 
-  // Browser on static hosting: /api/check 404s, so lookup() goes to RoProxy directly.
+  assert.strictEqual(r.headers['access-control-allow-origin'], '*', 'callable from the GitHub Pages copy');
+
+  // Browser on GitHub Pages: /api/check is a static 404 page, so lookup() uses the Vercel API cross-origin...
   const hosts = [];
+  const html404 = {status: 404, ok: false, headers: {get: () => 'text/html'}};
+  let vercelUp = true;
   global.fetch = async (url, init) => {
-    if (url.startsWith('/api/')) return json(404, {});
+    if (url.startsWith('/api/')) return html404;
     hosts.push(new URL(url).host);
+    if (url.startsWith('https://roblox-toolkit.vercel.app/api/check')) {
+      return vercelUp ? json(200, {results: [{name: 'BuilderMan', status: 'taken'}, {name: 'freeone', status: 'available'}]}) : json(502, {error: 'down'});
+    }
     return robloxStub(url, init);
   };
   assert.deepStrictEqual((await lookup(['BuilderMan', 'freeone'])).map(x => x.status), ['taken', 'available']);
-  assert.deepStrictEqual(hosts, ['users.roproxy.com', 'auth.roproxy.com']);
+  assert.deepStrictEqual(hosts, ['roblox-toolkit.vercel.app']);
+  // ...and if that API is failing, straight to Roblox's CORS-friendly mirror.
+  hosts.length = 0;
+  vercelUp = false;
+  assert.deepStrictEqual((await lookup(['BuilderMan', 'freeone'])).map(x => x.status), ['taken', 'available']);
+  assert.deepStrictEqual(hosts, ['roblox-toolkit.vercel.app', 'users.roproxy.com', 'auth.roproxy.com']);
 
   // Clothing: shirt id -> model file -> template image id -> PNG bytes.
   const png = Buffer.from([0x89, 0x50, 0x4e, 0x47, 1, 2, 3]);
@@ -148,6 +160,8 @@ function call(handler, query) {
   assert.strictEqual(shirt.headers['x-asset-type'], 'shirt');
   assert.strictEqual(decodeURIComponent(shirt.headers['x-asset-name']), 'Cool Shirt');
   assert.ok(png.equals(shirt.body));
+  assert.strictEqual(shirt.headers['access-control-allow-origin'], '*');
+  assert.match(shirt.headers['access-control-expose-headers'], /x-asset-name/);
   assert.strictEqual((await call(clothing, 'id=777')).status, 415, 'non-clothing asset types are refused');
   assert.strictEqual((await call(clothing, 'id=12ab')).status, 400);
 

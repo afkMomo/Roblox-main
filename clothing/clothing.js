@@ -277,16 +277,15 @@ async function loadFromRoblox(slot, raw) {
   const id = (raw.match(/\d{3,}/) || [])[0];
   if (!id) return note(slot, 'Enter a Roblox item ID or catalog link.', 'is-warn');
   note(slot, 'Loading from Roblox...');
-  const res = await fetch(`/api/clothing?id=${id}`).catch(() => null);
-  const json = res && (res.headers.get('content-type') || '').includes('json');
-  if (!res || (!res.ok && !json)) return note(slot, 'Loading by ID needs the Vercel version of this site.', 'is-bad');
-  if (!res.ok) return note(slot, (await res.json()).error, 'is-bad');
+  const res = await api(`/api/clothing?id=${id}`); // api() from roblox.js
+  if (!res) return note(slot, 'Could not reach the server. Try again in a moment.', 'is-bad');
+  if (!res.ok) return note(slot, (await res.json().catch(() => ({}))).error || 'Could not load that item.', 'is-bad');
   const name = decodeURIComponent(res.headers.get('x-asset-name') || `Item ${id}`);
   const type = res.headers.get('x-asset-type');
-  if ((slot === 'shirt' && type === 'pants') || (slot === 'pants' && type === 'shirt')) {
-    note(slot, `${name} is ${type === 'pants' ? 'pants' : 'a shirt'}, loaded anyway`, 'is-warn');
-  }
   await setSlot(slot, await res.blob(), name);
+  if ((slot === 'shirt' && type === 'pants') || (slot === 'pants' && type === 'shirt')) {
+    note(slot, `${name} is ${type === 'pants' ? 'pants' : 'a shirt'}, shown here anyway`, 'is-warn');
+  }
 }
 
 document.querySelectorAll('.slot').forEach(el => {

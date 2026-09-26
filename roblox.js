@@ -63,16 +63,27 @@ async function checkNames(names, host) {
   return results;
 }
 
-// Browser entry point: our Vercel function when it's deployed, otherwise straight to RoProxy
-// (static hosting has no /api).
-let useApi = true;
-async function lookup(names) {
-  if (useApi) {
-    const res = await fetch(`/api/check?names=${encodeURIComponent(names.join(','))}`).catch(() => null);
-    if (res && res.status === 429) throw new RateLimited();
-    if (res && res.ok) return (await res.json()).results;
-    useApi = false;
+// Our /api functions. Same-origin when Vercel serves the site; on GitHub Pages (the custom domain)
+// there is no /api, so the same functions are called on Vercel cross-origin (they send CORS headers).
+const API_ORIGINS = ['', 'https://roblox-toolkit.vercel.app'];
+let apiOrigin; // settled on the first call that reaches a real API
+async function api(path) {
+  for (const origin of apiOrigin === undefined ? API_ORIGINS : [apiOrigin]) {
+    const res = await fetch(origin + path).catch(() => null);
+    const staticNotFound = res && res.status === 404 && !(res.headers.get('content-type') || '').includes('json');
+    if (res && !staticNotFound) {
+      apiOrigin = origin;
+      return res;
+    }
   }
+  return null;
+}
+
+// Browser entry point for availability: our API first, then Roblox's CORS-friendly mirror if that fails.
+async function lookup(names) {
+  const res = await api(`/api/check?names=${encodeURIComponent(names.join(','))}`);
+  if (res && res.status === 429) throw new RateLimited();
+  if (res && res.ok) return (await res.json()).results;
   return checkNames(names, 'roproxy.com');
 }
 
@@ -92,5 +103,5 @@ async function copyText(text, label = 'Copied') {
 }
 
 if (typeof module === 'object') {
-  module.exports = {VALID_NAME, CHAT_COLORS, chatColorIndex, chatColor, RateLimited, checkNames, lookup};
+  module.exports = {VALID_NAME, CHAT_COLORS, chatColorIndex, chatColor, RateLimited, checkNames, api, lookup};
 }

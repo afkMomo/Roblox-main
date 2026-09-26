@@ -11,6 +11,9 @@ async function download(id) {
 }
 
 module.exports = async (req, res) => {
+  // The GitHub Pages copy of the site (custom domain) calls this cross-origin.
+  res.setHeader('access-control-allow-origin', '*');
+  res.setHeader('access-control-expose-headers', 'x-asset-name, x-asset-type');
   const fail = (status, error) => {
     res.statusCode = status;
     res.setHeader('content-type', 'application/json');

@@ -7,6 +7,7 @@ const {VALID_NAME, RateLimited, checkNames} = require('../roblox.js');
 const MAX_NAMES = 100; // Roblox's batch lookup limit
 
 module.exports = async (req, res) => {
+  res.setHeader('access-control-allow-origin', '*'); // the GitHub Pages copy (custom domain) calls this cross-origin
   res.setHeader('content-type', 'application/json');
   res.setHeader('cache-control', 'no-store');
   const send = (code, body) => { res.statusCode = code; res.end(JSON.stringify(body)); };
