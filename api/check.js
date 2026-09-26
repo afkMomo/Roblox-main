@@ -1,8 +1,8 @@
 // GET /api/check?names=a,b,c
 // -> { results: [{ name, status: "available" | "taken" | "unavailable", message }] }
 // Browsers can't call roblox.com directly (CORS), so on Vercel the finder goes through here.
-// The checking logic is shared with the browser fallback in usernamefinder/finder.js.
-const {VALID_NAME, RateLimited, checkNames} = require('../usernamefinder/finder.js');
+// The checking logic is shared with the browser fallback in roblox.js.
+const {VALID_NAME, RateLimited, checkNames} = require('../roblox.js');
 
 const MAX_NAMES = 100; // Roblox's batch lookup limit
 

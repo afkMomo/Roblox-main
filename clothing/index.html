@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Preview Roblox shirts, pants, and t-shirts on a 3D R6 or R15 character before you upload. Load templates from files or Roblox IDs.">
+  <title>Clothing Previewer: Roblox Toolkit</title>
+  <script src="/theme.js"></script>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource-variable/geist@5/index.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource-variable/geist-mono@5/index.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+  <link rel="stylesheet" href="/styles.css">
+  <script type="importmap">
+    {"imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.min.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+    }}
+  </script>
+  <script defer src="/roblox.js"></script>
+  <script type="module" src="/clothing/clothing.js"></script>
+</head>
+<body>
+  <header class="nav">
+    <div class="nav-inner container">
+      <a class="brand" href="/"><span class="brand-mark" aria-hidden="true">R</span>Roblox Toolkit</a>
+      <nav class="nav-links" aria-label="Main"><a href="/#tools">Tools</a></nav>
+      <div class="nav-actions">
+        <button class="icon-btn" type="button" data-theme-toggle aria-label="Toggle dark mode"><i class="ph ph-moon when-light"></i><i class="ph ph-sun when-dark"></i></button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="page-head">
+      <h1 class="rise">Clothing previewer</h1>
+      <p class="rise" style="--i:1">Try shirts, pants, and t-shirts on a 3D Roblox character before you upload. Drop a template, paste one, or load any item by its ID.</p>
+    </div>
+
+    <div class="studio">
+      <section class="viewer card rise" style="--i:2" aria-label="3D preview">
+        <div id="stage" class="stage is-loading">
+          <p class="stage-msg" id="stage-msg">Loading 3D preview...</p>
+        </div>
+        <div class="viewer-bar">
+          <div class="segmented" role="group" aria-label="Camera angle">
+            <button type="button" data-view="0" aria-pressed="true">Front</button>
+            <button type="button" data-view="0.65" aria-pressed="false">3/4</button>
+            <button type="button" data-view="1.5708" aria-pressed="false">Side</button>
+            <button type="button" data-view="3.1416" aria-pressed="false">Back</button>
+          </div>
+          <div class="viewer-tools">
+            <button class="icon-btn" type="button" id="zoom-out" aria-label="Zoom out"><i class="ph ph-magnifying-glass-minus"></i></button>
+            <button class="icon-btn" type="button" id="zoom-in" aria-label="Zoom in"><i class="ph ph-magnifying-glass-plus"></i></button>
+            <button class="icon-btn" type="button" id="spin" aria-label="Auto rotate" aria-pressed="false"><i class="ph ph-arrows-clockwise"></i></button>
+            <button class="icon-btn" type="button" id="reset" aria-label="Reset view"><i class="ph ph-arrow-counter-clockwise"></i></button>
+            <button class="btn btn-secondary btn-sm" type="button" id="shot"><i class="ph ph-camera"></i> Save image</button>
+          </div>
+        </div>
+        <p class="hint viewer-hint">Drag to rotate. Scroll or pinch to zoom.</p>
+      </section>
+
+      <aside class="panel card rise" style="--i:3" aria-label="Outfit settings">
+        <h2 class="panel-title">Clothing</h2>
+        <div class="slots">
+          <div class="slot" data-slot="shirt">
+            <label class="slot-drop">
+              <input type="file" accept="image/png,image/webp,image/jpeg" class="sr-only">
+              <span class="slot-thumb"><img alt="" hidden><i class="ph ph-t-shirt"></i></span>
+              <span class="slot-text"><b>Shirt</b><span class="slot-note">Drop, paste, or click to upload</span></span>
+              <button class="icon-btn slot-remove" type="button" aria-label="Remove shirt" hidden><i class="ph ph-x"></i></button>
+            </label>
+            <form class="slot-id"><input class="input" placeholder="Roblox ID or catalog link" aria-label="Shirt Roblox ID or link" inputmode="url"><button class="btn btn-secondary btn-sm" type="submit">Load</button></form>
+          </div>
+          <div class="slot" data-slot="pants">
+            <label class="slot-drop">
+              <input type="file" accept="image/png,image/webp,image/jpeg" class="sr-only">
+              <span class="slot-thumb"><img alt="" hidden><i class="ph ph-pants"></i></span>
+              <span class="slot-text"><b>Pants</b><span class="slot-note">Drop, paste, or click to upload</span></span>
+              <button class="icon-btn slot-remove" type="button" aria-label="Remove pants" hidden><i class="ph ph-x"></i></button>
+            </label>
+            <form class="slot-id"><input class="input" placeholder="Roblox ID or catalog link" aria-label="Pants Roblox ID or link" inputmode="url"><button class="btn btn-secondary btn-sm" type="submit">Load</button></form>
+          </div>
+          <div class="slot" data-slot="tshirt">
+            <label class="slot-drop">
+              <input type="file" accept="image/png,image/webp,image/jpeg" class="sr-only">
+              <span class="slot-thumb"><img alt="" hidden><i class="ph ph-image"></i></span>
+              <span class="slot-text"><b>T-shirt</b><span class="slot-note">Any square image, shown on the chest</span></span>
+              <button class="icon-btn slot-remove" type="button" aria-label="Remove t-shirt" hidden><i class="ph ph-x"></i></button>
+            </label>
+            <form class="slot-id"><input class="input" placeholder="Roblox ID or catalog link" aria-label="T-shirt Roblox ID or link" inputmode="url"><button class="btn btn-secondary btn-sm" type="submit">Load</button></form>
+          </div>
+        </div>
+        <div class="template-links">
+          <button class="btn btn-ghost btn-sm" type="button" id="example"><i class="ph ph-sparkle"></i> Show example</button>
+          <button class="btn btn-ghost btn-sm" type="button" data-template="shirt"><i class="ph ph-download-simple"></i> Shirt template</button>
+          <button class="btn btn-ghost btn-sm" type="button" data-template="pants"><i class="ph ph-download-simple"></i> Pants template</button>
+        </div>
+
+        <h2 class="panel-title">Body</h2>
+        <div class="field">
+          <span class="label">Rig</span>
+          <div class="checks">
+            <label class="check"><input type="radio" name="rig" value="R6" checked> R6 classic</label>
+            <label class="check"><input type="radio" name="rig" value="R15"> R15 blocky</label>
+          </div>
+        </div>
+        <div class="field">
+          <span class="label">Skin tone</span>
+          <div class="skins">
+            <label style="--c:#a3a2a5" title="Medium stone grey"><input type="radio" name="skin" value="#a3a2a5" checked></label>
+            <label style="--c:#ffcc99" title="Pastel brown"><input type="radio" name="skin" value="#ffcc99"></label>
+            <label style="--c:#eab892" title="Light orange"><input type="radio" name="skin" value="#eab892"></label>
+            <label style="--c:#cc8e69" title="Nougat"><input type="radio" name="skin" value="#cc8e69"></label>
+            <label style="--c:#a05f35" title="Dark orange"><input type="radio" name="skin" value="#a05f35"></label>
+            <label style="--c:#7c5c46" title="Brown"><input type="radio" name="skin" value="#7c5c46"></label>
+            <label style="--c:#694028" title="Reddish brown"><input type="radio" name="skin" value="#694028"></label>
+            <label style="--c:#f8f8f8" title="Institutional white"><input type="radio" name="skin" value="#f8f8f8"></label>
+            <label class="skin-custom" title="Custom color"><input type="color" id="skin-custom" value="#3a63f0" aria-label="Custom skin color"><i class="ph ph-plus"></i></label>
+          </div>
+        </div>
+        <div class="field">
+          <span class="label">Face</span>
+          <div class="checks">
+            <label class="check"><input type="radio" name="face" value="smile" checked> Smile</label>
+            <label class="check"><input type="radio" name="face" value="happy"> Happy</label>
+            <label class="check"><input type="radio" name="face" value="cool"> Cool</label>
+            <label class="check"><input type="radio" name="face" value="wink"> Wink</label>
+            <label class="check"><input type="radio" name="face" value="none"> None</label>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <span>Made by momo</span>
+      <span>Not affiliated with Roblox Corporation.</span>
+    </div>
+  </footer>
+</body>
+</html>

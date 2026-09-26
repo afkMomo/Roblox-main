@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="See which color a Roblox username shows in chat, for one name or a whole list, and check if they are available.">
+  <title>Username Color: Roblox Toolkit</title>
+  <script src="/theme.js"></script>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource-variable/geist@5/index.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource-variable/geist-mono@5/index.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+  <link rel="stylesheet" href="/styles.css">
+  <script defer src="/roblox.js"></script>
+  <script defer src="/usernamecolor/color.js"></script>
+</head>
+<body>
+  <header class="nav">
+    <div class="nav-inner container">
+      <a class="brand" href="/"><span class="brand-mark" aria-hidden="true">R</span>Roblox Toolkit</a>
+      <nav class="nav-links" aria-label="Main"><a href="/#tools">Tools</a></nav>
+      <div class="nav-actions">
+        <button class="icon-btn" type="button" data-theme-toggle aria-label="Toggle dark mode"><i class="ph ph-moon when-light"></i><i class="ph ph-sun when-dark"></i></button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="page-head">
+      <h1 class="rise">Username color</h1>
+      <p class="rise" style="--i:1">See the color each name shows in Roblox chat, using the same formula as Roblox's default chat. Paste one name or hundreds.</p>
+    </div>
+
+    <div class="finder">
+      <div class="finder-form card rise" style="--i:2">
+        <div class="field">
+          <label for="names">Usernames</label>
+          <textarea id="names" class="input textarea mono" rows="10" spellcheck="false" autocomplete="off" aria-describedby="count"></textarea>
+          <p id="count" class="hint"></p>
+          <p class="hint">One per line, or separated by commas or spaces.</p>
+        </div>
+        <div class="field">
+          <label for="message">Preview message</label>
+          <input id="message" class="input" value="Hello!" maxlength="80">
+        </div>
+        <div class="form-actions">
+          <button id="check" class="btn btn-primary" type="button"><i class="ph ph-magnifying-glass"></i> Check availability</button>
+          <button id="clear" class="btn btn-secondary" type="button">Clear</button>
+        </div>
+        <p id="check-status" class="hint" aria-live="polite" hidden></p>
+      </div>
+
+      <section class="results card rise" style="--i:3" aria-label="Chat colors">
+        <div class="color-toolbar">
+          <div id="filters" class="segmented color-filters" role="group" aria-label="Filter by chat color"></div>
+          <div class="color-toolbar-end">
+            <label class="inline-check"><input id="only-available" type="checkbox" disabled> Available only</label>
+            <label class="sr-only" for="sort">Sort</label>
+            <select id="sort" class="input sort">
+              <option value="input">Sort: As typed</option>
+              <option value="color">Sort: Color</option>
+              <option value="az">Sort: A to Z</option>
+            </select>
+            <button id="copy-visible" class="btn btn-ghost btn-sm" type="button"><i class="ph ph-copy"></i> Copy shown</button>
+          </div>
+        </div>
+        <ul id="list" class="color-list"></ul>
+        <div id="empty" class="empty" hidden>
+          <i class="ph ph-chat-circle-text"></i>
+          <strong>Paste some usernames</strong>
+          <span>Their chat colors show up here as you type.</span>
+        </div>
+        <div id="no-match" class="empty" hidden>
+          <i class="ph ph-funnel"></i>
+          <strong>No names match these filters</strong>
+          <span>Pick another color or turn off Available only.</span>
+        </div>
+        <p class="hint results-foot">Games with custom chat can set their own colors. Everywhere else, this is the color other players see.</p>
+      </section>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <span>Made by momo</span>
+      <span>Not affiliated with Roblox Corporation.</span>
+    </div>
+  </footer>
+</body>
+</html>

@@ -1,20 +1,10 @@
 const tools = [
-  {name: 'Username Finder', category: 'Utilities', icon: 'at', url: '/usernamefinder', description: 'Set a length, characters, and a pattern, then find Roblox usernames that are still free.'},
-  {name: 'Avatar Rotator', category: 'Utilities', icon: 'arrows-clockwise', url: '/avatar', description: 'Rotate your Roblox avatar between saved outfits automatically, right from your browser.'},
-  {name: 'Roblox Studio', category: 'Create', icon: 'hammer', url: 'https://create.roblox.com/', description: 'The official environment for building, scripting, and testing experiences.'},
-  {name: 'Creator Dashboard', category: 'Create', icon: 'squares-four', url: 'https://create.roblox.com/dashboard/creations', description: 'Manage your experiences, assets, analytics, and monetization in one place.'},
-  {name: 'Animation Editor', category: 'Create', icon: 'person-simple-run', url: 'https://create.roblox.com/docs/art/animation/editor', description: 'Create and edit custom animations directly inside Roblox Studio.'},
-  {name: 'Luau Playground', category: 'Code', icon: 'terminal-window', url: 'https://luau.org/demo', description: 'Write and test Luau code in your browser with instant feedback.'},
-  {name: 'Roblox API Reference', category: 'Code', icon: 'brackets-curly', url: 'https://create.roblox.com/docs/reference/engine', description: 'Search classes, properties, events, and services from the Roblox engine.'},
-  {name: 'Asset Delivery API', category: 'Code', icon: 'cloud-arrow-down', url: 'https://create.roblox.com/docs/reference/cloud/assets', description: 'Explore asset metadata and delivery endpoints in the official docs.'},
-  {name: 'Rojo', category: 'Code', icon: 'arrows-left-right', url: 'https://rojo.space/', description: 'Sync code from your own editor into Studio and keep your project in Git.'},
-  {name: 'BloxMake Previewer', category: 'Assets', icon: 'cube', url: 'https://bloxmake.com/library/previewer', description: 'Preview Roblox assets and library items before using them in your project.'},
-  {name: 'Creator Store', category: 'Assets', icon: 'storefront', url: 'https://create.roblox.com/marketplace', description: 'Find models, plugins, audio, fonts, and other assets for your experiences.'},
-  {name: 'Creator Documentation', category: 'Learn', icon: 'book-open', url: 'https://create.roblox.com/docs', description: 'Official guides and tutorials for every part of Roblox development.'},
-  {name: 'DevForum', category: 'Learn', icon: 'chats-circle', url: 'https://devforum.roblox.com/', description: 'Connect with other creators, get help, and follow platform updates.'},
-  {name: 'Roblox Status', category: 'Utilities', icon: 'pulse', url: 'https://status.roblox.com/', description: 'Check whether Roblox services are up before you debug your own game.'},
+  {name: 'Username Finder', category: 'Usernames', icon: 'at', url: '/usernamefinder', description: 'Generate names from words, patterns, and your own rules, and see which ones are free on Roblox, live.'},
+  {name: 'Username Color', category: 'Usernames', icon: 'palette', url: '/usernamecolor', description: 'See the color any username shows in Roblox chat, for one name or a whole list, and check if they are free.'},
+  {name: 'Clothing Previewer', category: 'Avatar', icon: 't-shirt', url: '/clothing', description: 'Try shirts, pants, and t-shirts on a 3D R6 or R15 character before you upload. Load templates by file or Roblox ID.'},
+  {name: 'Avatar Rotator', category: 'Avatar', icon: 'arrows-clockwise', url: '/avatar', description: 'Rotate your Roblox avatar between saved outfits automatically, right from your browser.'},
 ];
-const CATEGORIES = ['All', 'Create', 'Code', 'Assets', 'Learn', 'Utilities'];
+const CATEGORIES = ['All', 'Usernames', 'Avatar'];
 const FAV_KEY = 'roblox-toolkit-favorites';
 
 const $ = s => document.querySelector(s);
@@ -36,18 +26,15 @@ const sorters = {
 };
 
 function card(t) {
-  const local = t.url.startsWith('/');
   const saved = favorites.includes(t.name);
-  const target = local ? '' : ' target="_blank" rel="noreferrer"';
-  const host = local ? 'On this site' : `${new URL(t.url).hostname.replace(/^www\./, '')} <i class="ph ph-arrow-up-right"></i>`;
-  return `<article class="tool${local ? ' is-local' : ''}">
+  return `<article class="tool">
     <div class="tool-top">
       <span class="tool-icon"><i class="ph ph-${t.icon}"></i></span>
       <button class="fav" type="button" data-fav="${t.name}" aria-pressed="${saved}" aria-label="${saved ? 'Remove' : 'Save'} ${t.name}"><i class="${saved ? 'ph-fill' : 'ph'} ph-heart"></i></button>
     </div>
-    <h3><a href="${t.url}"${target}>${t.name}</a></h3>
+    <h3><a href="${t.url}">${t.name}</a></h3>
     <p>${t.description}</p>
-    <div class="tool-meta"><span class="tag${local ? ' tag-accent' : ''}">${t.category}</span><span class="host">${host}</span></div>
+    <div class="tool-meta"><span class="tag">${t.category}</span><span class="open">Open <i class="ph ph-arrow-right"></i></span></div>
   </article>`;
 }
 
@@ -99,7 +86,7 @@ document.addEventListener('keydown', e => {
 });
 render();
 
-// Quick username check. VALID_NAME and lookup() come from /usernamefinder/finder.js.
+// Quick username check. VALID_NAME and lookup() come from /roblox.js.
 const quickStatus = $('#quick-status');
 const esc = s => String(s).replace(/[&<>"']/g, c => `&#${c.charCodeAt(0)};`);
 function setQuick(kind, icon, html) {

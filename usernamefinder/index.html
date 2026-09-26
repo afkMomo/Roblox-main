@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Find available Roblox usernames that match your length, character, and pattern rules.">
+  <meta name="description" content="Find available Roblox usernames from words, patterns, lengths, and chat colors, checked live against Roblox.">
   <title>Username Finder: Roblox Toolkit</title>
   <script src="/theme.js"></script>
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
@@ -11,19 +11,16 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource-variable/geist-mono@5/index.min.css">
   <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
   <link rel="stylesheet" href="/styles.css">
+  <script defer src="/roblox.js"></script>
+  <script defer src="/usernamefinder/words.js"></script>
   <script defer src="/usernamefinder/finder.js"></script>
 </head>
 <body>
   <header class="nav">
     <div class="nav-inner container">
       <a class="brand" href="/"><span class="brand-mark" aria-hidden="true">R</span>Roblox Toolkit</a>
-      <nav class="nav-links" aria-label="Main">
-        <a href="/#tools">Tools</a>
-        <a href="/usernamefinder" aria-current="page">Username finder</a>
-        <a href="/avatar">Avatar rotator</a>
-      </nav>
+      <nav class="nav-links" aria-label="Main"><a href="/#tools">Tools</a></nav>
       <div class="nav-actions">
-        <a class="icon-btn" href="https://github.com/afkMomo/Roblox-main" target="_blank" rel="noreferrer" aria-label="GitHub repository"><i class="ph ph-github-logo"></i></a>
         <button class="icon-btn" type="button" data-theme-toggle aria-label="Toggle dark mode"><i class="ph ph-moon when-light"></i><i class="ph ph-sun when-dark"></i></button>
       </div>
     </div>
@@ -32,23 +29,24 @@
   <main class="container">
     <div class="page-head">
       <h1 class="rise">Username finder</h1>
-      <p class="rise" style="--i:1">Set your rules, and it keeps generating names and checking them against Roblox until it finds ones that are free.</p>
+      <p class="rise" style="--i:1">Pick a style and your rules. It generates names and checks each one with Roblox live, as many as you want.</p>
     </div>
 
     <div class="finder">
       <form id="finder" class="finder-form card rise" style="--i:2" novalidate>
-        <div class="row-2">
-          <div class="field">
-            <label for="min">Min length</label>
-            <input id="min" name="min" class="input" type="number" min="3" max="20" value="5" required>
-          </div>
-          <div class="field">
-            <label for="max">Max length</label>
-            <input id="max" name="max" class="input" type="number" min="3" max="20" value="8" required>
-          </div>
-        </div>
-
         <fieldset class="field fieldset">
+          <legend class="label">Style</legend>
+          <div class="style-picker">
+            <label><input type="radio" name="style" value="random"><b>Random</b><code>k7zq2m</code></label>
+            <label><input type="radio" name="style" value="pronounceable"><b>Pronounceable</b><code>tovaki</code></label>
+            <label><input type="radio" name="style" value="word"><b>Word</b><code>Falcon</code></label>
+            <label><input type="radio" name="style" value="twowords" checked><b>Two words</b><code>SilentFox</code></label>
+            <label><input type="radio" name="style" value="wordword"><b>word_word</b><code>neon_wolf</code></label>
+            <label><input type="radio" name="style" value="pattern"><b>Pattern</b><code>CVCV_DD</code></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="field fieldset" data-show="random">
           <legend class="label">Characters</legend>
           <div class="checks">
             <label class="check"><input type="checkbox" name="letters" checked> Letters</label>
@@ -57,33 +55,125 @@
           </div>
         </fieldset>
 
-        <fieldset class="field fieldset">
-          <legend class="label">Style</legend>
+        <div class="field" data-show="pattern">
+          <label for="pattern">Pattern</label>
+          <input id="pattern" name="pattern" class="input mono" value="CVCVC" maxlength="20" autocomplete="off" spellcheck="false">
+          <p class="hint"><code>C</code> consonant, <code>V</code> vowel, <code>L</code> letter, <code>D</code> digit, <code>?</code> letter or digit. Anything else stays as typed, so <code>neoCVDD</code> makes names like <code>neobo42</code>.</p>
+        </div>
+
+        <fieldset class="field fieldset" data-show="word twowords wordword">
+          <legend class="label">Word types</legend>
           <div class="checks">
-            <label class="check"><input type="radio" name="style" value="random" checked> Random</label>
-            <label class="check"><input type="radio" name="style" value="pronounceable"> Pronounceable</label>
+            <label class="check"><input type="checkbox" name="category" value="adjectives" checked> Adjectives</label>
+            <label class="check"><input type="checkbox" name="category" value="animals" checked> Animals</label>
+            <label class="check"><input type="checkbox" name="category" value="nature"> Nature</label>
+            <label class="check"><input type="checkbox" name="category" value="space"> Space</label>
+            <label class="check"><input type="checkbox" name="category" value="fantasy"> Fantasy</label>
+            <label class="check"><input type="checkbox" name="category" value="gaming"> Gaming</label>
+            <label class="check"><input type="checkbox" name="category" value="food"> Food</label>
+            <label class="check"><input type="checkbox" name="category" value="colors"> Colors</label>
           </div>
-          <p class="hint">Pronounceable mixes consonants and vowels, like <code>tovaki</code>.</p>
+          <label class="label sub-label" for="custom">Your own words <span class="muted">(optional)</span></label>
+          <textarea id="custom" name="custom" class="input textarea" rows="2" placeholder="momo, pixel, ninja" spellcheck="false"></textarea>
+          <p class="hint">Mixed in with the types above. In two-word styles, adjectives and colors go first.</p>
         </fieldset>
 
-        <div class="row-3">
+        <div class="row-2" data-show="random pronounceable word twowords wordword">
           <div class="field">
-            <label for="prefix">Starts with</label>
-            <input id="prefix" name="prefix" class="input" maxlength="20" autocomplete="off" spellcheck="false">
+            <label for="min">Min length</label>
+            <input id="min" name="min" class="input" type="number" min="3" max="20" value="5">
           </div>
           <div class="field">
-            <label for="contains">Contains</label>
-            <input id="contains" name="contains" class="input" maxlength="20" autocomplete="off" spellcheck="false">
-          </div>
-          <div class="field">
-            <label for="suffix">Ends with</label>
-            <input id="suffix" name="suffix" class="input" maxlength="20" autocomplete="off" spellcheck="false">
+            <label for="max">Max length</label>
+            <input id="max" name="max" class="input" type="number" min="3" max="20" value="14">
           </div>
         </div>
 
-        <div class="field">
-          <label for="count">How many to find</label>
-          <input id="count" name="count" class="input" type="number" min="1" max="50" value="10" required>
+        <div class="row-2">
+          <div class="field">
+            <label for="case">Capitalization</label>
+            <select id="case" name="case" class="input">
+              <option value="camel" selected>CamelCase</option>
+              <option value="capital">Capitalized</option>
+              <option value="lower">lowercase</option>
+              <option value="upper">UPPERCASE</option>
+              <option value="mixed">rAnDoM mix</option>
+            </select>
+          </div>
+          <div class="field" data-show="pronounceable word twowords wordword">
+            <label for="numbers">Numbers</label>
+            <select id="numbers" name="numbers" class="input">
+              <option value="none">None</option>
+              <option value="end">At the end</option>
+              <option value="start">At the start</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row-2" data-show="pronounceable word twowords wordword">
+          <div class="field">
+            <label for="numMin">Fewest digits</label>
+            <input id="numMin" name="numMin" class="input" type="number" min="1" max="6" value="1">
+          </div>
+          <div class="field">
+            <label for="numMax">Most digits</label>
+            <input id="numMax" name="numMax" class="input" type="number" min="1" max="6" value="3">
+          </div>
+        </div>
+
+        <details class="more">
+          <summary><i class="ph ph-sliders-horizontal"></i> More filters</summary>
+          <div class="more-body">
+            <div class="row-3">
+              <div class="field">
+                <label for="prefix">Starts with</label>
+                <input id="prefix" name="prefix" class="input" maxlength="20" autocomplete="off" spellcheck="false">
+              </div>
+              <div class="field">
+                <label for="contains">Contains</label>
+                <input id="contains" name="contains" class="input" maxlength="20" autocomplete="off" spellcheck="false">
+              </div>
+              <div class="field">
+                <label for="suffix">Ends with</label>
+                <input id="suffix" name="suffix" class="input" maxlength="20" autocomplete="off" spellcheck="false">
+              </div>
+            </div>
+            <div class="field">
+              <label for="exclude">Never use these characters</label>
+              <input id="exclude" name="exclude" class="input mono" maxlength="36" placeholder="qxz0" autocomplete="off" spellcheck="false">
+            </div>
+            <fieldset class="field fieldset">
+              <legend class="label">Chat color</legend>
+              <div class="swatch-toggles">
+                <label style="--c:#fd2943"><input type="checkbox" name="color" value="0"><span></span>Red</label>
+                <label style="--c:#01a2ff"><input type="checkbox" name="color" value="1"><span></span>Blue</label>
+                <label style="--c:#02b857"><input type="checkbox" name="color" value="2"><span></span>Green</label>
+                <label style="--c:#6b327c"><input type="checkbox" name="color" value="3"><span></span>Violet</label>
+                <label style="--c:#da8541"><input type="checkbox" name="color" value="4"><span></span>Orange</label>
+                <label style="--c:#f5cd30"><input type="checkbox" name="color" value="5"><span></span>Yellow</label>
+                <label style="--c:#e8bac8"><input type="checkbox" name="color" value="6"><span></span>Pink</label>
+                <label style="--c:#d7c59a"><input type="checkbox" name="color" value="7"><span></span>Tan</label>
+              </div>
+              <p class="hint">Only keep names that show in these colors in Roblox chat. Leave all off for any color.</p>
+            </fieldset>
+          </div>
+        </details>
+
+        <div class="row-2">
+          <div class="field">
+            <label for="count">How many to find</label>
+            <input id="count" name="count" class="input" type="number" min="1" value="25">
+            <label class="inline-check"><input type="checkbox" name="unlimited"> No limit</label>
+          </div>
+          <div class="field">
+            <label for="pace">Speed</label>
+            <select id="pace" name="pace" class="input">
+              <option value="0">Fast</option>
+              <option value="400" selected>Normal</option>
+              <option value="1500">Gentle</option>
+            </select>
+            <p class="hint">Gentle hits rate limits less.</p>
+          </div>
         </div>
 
         <p id="form-error" class="form-error" role="alert" hidden><i class="ph ph-warning-circle"></i><span id="form-error-text"></span></p>
@@ -94,40 +184,53 @@
         </div>
       </form>
 
-      <section class="results card rise" style="--i:3" aria-labelledby="results-title">
-        <h2 id="results-title" class="sr-only">Results</h2>
-        <div class="results-head">
-          <div class="stats" aria-live="polite">
-            <span class="ok"><b id="stat-found" class="mono">0</b>available</span>
-            <span><b id="stat-taken" class="mono">0</b>taken</span>
-            <span><b id="stat-checked" class="mono">0</b>checked</span>
+      <div class="stack">
+        <section class="results card rise" style="--i:3" aria-labelledby="found-title">
+          <div class="results-head">
+            <div class="stats" aria-live="polite">
+              <span class="ok"><b id="stat-found" class="mono">0</b>available</span>
+              <span><b id="stat-taken" class="mono">0</b>taken</span>
+              <span><b id="stat-filtered" class="mono">0</b>not allowed</span>
+              <span><b id="stat-checked" class="mono">0</b>checked</span>
+            </div>
+            <div class="stats-meta mono"><span id="stat-speed">0/s</span><span id="stat-time">0:00</span></div>
           </div>
-          <button id="copy-all" class="btn btn-ghost btn-sm" type="button" disabled><i class="ph ph-copy"></i> Copy all</button>
-        </div>
-        <div class="progress"><span id="bar"></span></div>
+          <div class="progress"><span id="bar"></span></div>
+          <p id="notice" class="notice" role="status" hidden><i class="ph ph-hourglass-medium"></i><span id="notice-text"></span></p>
 
-        <p id="notice" class="notice" role="status" hidden><i class="ph ph-warning"></i><span id="notice-text"></span></p>
+          <div class="found-head">
+            <h2 id="found-title">Available names</h2>
+            <div class="found-actions">
+              <button id="copy-all" class="btn btn-ghost btn-sm" type="button" data-needs-results disabled><i class="ph ph-copy"></i> Copy all</button>
+              <button id="download" class="btn btn-ghost btn-sm" type="button" data-needs-results disabled><i class="ph ph-download-simple"></i> .txt</button>
+              <button id="to-colors" class="btn btn-ghost btn-sm" type="button" data-needs-results disabled><i class="ph ph-palette"></i> Chat colors</button>
+            </div>
+          </div>
+          <div id="found" class="found-grid"></div>
+          <div id="empty" class="empty">
+            <i class="ph ph-at"></i>
+            <strong id="empty-title">Available names show up here</strong>
+            <span id="empty-text">Set your rules and press Find usernames.</span>
+          </div>
+          <p class="hint results-foot">Click any name to copy it. The dot is its Roblox chat color. Someone can still claim a name before you, so sign up soon.</p>
+        </section>
 
-        <ul id="results" class="result-list"></ul>
-        <ul id="loading" class="result-list" aria-hidden="true" hidden>
-          <li class="skeleton"></li><li class="skeleton"></li><li class="skeleton"></li>
-        </ul>
-
-        <div id="empty" class="empty">
-          <i class="ph ph-at"></i>
-          <strong id="empty-title">Available names show up here</strong>
-          <span id="empty-text">Set your rules on the left and press Find usernames.</span>
-        </div>
-
-        <p class="hint results-foot">Checked live against Roblox. Someone else can still claim a name before you do, so sign up soon.</p>
-      </section>
+        <section class="console card rise" style="--i:4" aria-labelledby="log-title">
+          <div class="console-head">
+            <h2 id="log-title"><i class="ph ph-terminal-window"></i> Live log</h2>
+            <label class="inline-check"><input id="show-taken" type="checkbox" checked> Show taken</label>
+            <button id="clear-log" class="btn btn-ghost btn-sm" type="button">Clear</button>
+          </div>
+          <ol id="log" class="log" aria-live="off"></ol>
+        </section>
+      </div>
     </div>
   </main>
 
   <footer class="footer">
     <div class="container">
-      <span>© 2026 Roblox Toolkit</span>
-      <span>Independent community project. Not affiliated with Roblox Corporation.</span>
+      <span>Made by momo</span>
+      <span>Not affiliated with Roblox Corporation.</span>
     </div>
   </footer>
 </body>
